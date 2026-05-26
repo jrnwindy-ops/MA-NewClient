@@ -1083,9 +1083,9 @@ function buildClientPDF(info) {
     doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);doc.text(period,x+10,fy);fy+=14;
     items.forEach(item=>{drawCheckmark(doc,x+10,fy-4);doc.setFontSize(9);doc.setTextColor(...DKTEXT);doc.text(item,x+24,fy,{maxWidth:cw-32});fy+=13;});
   };
-  const cw2=(TW-10)/2, ch=Math.max(140, 60+payrollItems.length*14);
   const payrollItems=['Full payroll processing (up to 5 employees)','Federal & California state tax filing','Direct deposit / ACH processing','New hire reporting','Annual W-2 preparation & filing','California EDD reporting'];
   const bkItems=['Monthly bookkeeping & reconciliation','Chart of accounts maintenance','Monthly financial statements','Vendor and expense tracking','Dedicated accounting representative'];
+  const cw2=(TW-10)/2, ch=Math.max(140, 60+payrollItems.length*14);
   const isPayroll=info.service_tier.toLowerCase().includes('payroll');
   drawFeeCard(ML,cw2,ch,'Full-Service Payroll','$500','per month / up to 5 employees',payrollItems,isPayroll);
   drawFeeCard(ML+cw2+10,cw2,ch,'Bookkeeping Only','$400','per month',bkItems,!isPayroll);
