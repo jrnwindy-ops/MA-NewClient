@@ -1314,9 +1314,13 @@ function empHdrBand(doc, pageW, info) {
   doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
   doc.text(info.biz_name.toUpperCase(), 54, 30);
   doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(181,212,244);
-  doc.text(`${info.biz_address}  |  ${info.biz_phone}`, 54, 43);
+  // Show address and phone on same line, truncated to fit
+  const addrLine = `${info.biz_address}  |  ${info.biz_phone}`;
+  doc.text(addrLine, 54, 43, {maxWidth: pageW - 250});
   doc.setTextColor(159,225,203);
   doc.text('New Employee Onboarding Package', pageW-54, 37, {align:'right'});
+  doc.setTextColor(181,212,244);
+  doc.text('Payroll by Martinez Accounting Inc.  |  559-743-7365', pageW-54, 47, {align:'right'});
 }
 
 function buildEmployeePDF(info) {
@@ -1334,9 +1338,11 @@ function buildEmployeePDF(info) {
   doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
   doc.text(info.biz_name.toUpperCase(),ML,30);
   doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(181,212,244);
-  doc.text(`${info.biz_address}  |  ${info.biz_phone}`,ML,43);
+  doc.text(`${info.biz_address}  |  ${info.biz_phone}`,ML,43,{maxWidth:W/2-20});
   doc.setTextColor(159,225,203);
-  doc.text('Payroll & Accounting Services',MR,37,{align:'right'});
+  doc.text('Payroll & Accounting Services',MR,30,{align:'right'});
+  doc.setTextColor(181,212,244);
+  doc.text('Martinez Accounting Inc.  |  559-743-7365',MR,43,{align:'right'});
 
   let y=130;
   doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...BLUE);
@@ -1363,7 +1369,7 @@ function buildEmployeePDF(info) {
   doc.setDrawColor(...NAVY);doc.setLineWidth(1.5);doc.line(ML,H-36,MR,H-36);
   doc.setDrawColor(...TEAL);doc.setLineWidth(0.5);doc.line(ML,H-30,MR,H-30);
   doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...MIDGRAY);
-  doc.text(`Payroll administered by Martinez Accounting Inc. | 1004 F Street, Reedley, CA 93654`,W/2,H-16,{align:'center'});
+  doc.text('Payroll administered by Martinez Accounting Inc. | 1004 F Street, Reedley, CA 93654 | 559-743-7365',W/2,H-16,{align:'center',maxWidth:TW});
 
   // ── WELCOME ──
   y=addEmpPg();
@@ -1378,13 +1384,17 @@ function buildEmployeePDF(info) {
     ['Employee Information Sheet','Personal details, emergency contact, and employment information for payroll records.'],
   ];
   formInstructions.forEach(([form,inst])=>{
-    if(y>H-80){y=addEmpPg();}
-    setColor(doc,[230,241,251]);doc.rect(ML,y-10,100,36,'F');
-    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...BLUE);doc.text(form,ML+8,y+8);
+    if(y>H-90){y=addEmpPg();}
     doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
-    const ins=doc.splitTextToSize(inst,TW-108);doc.text(ins,ML+108,y);
-    doc.setDrawColor(...LGRAY);doc.line(ML,y+26,MR,y+26);
-    y+=32;
+    const ins=doc.splitTextToSize(inst,TW-108);
+    const rowH=Math.max(40, ins.length*13+16);
+    setColor(doc,[230,241,251]);doc.rect(ML,y-10,100,rowH,'F');
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...BLUE);
+    doc.text(form,ML+8,y+8,{maxWidth:88});
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
+    doc.text(ins,ML+108,y+4);
+    doc.setDrawColor(...LGRAY);doc.line(ML,y+rowH-10,MR,y+rowH-10);
+    y+=rowH+2;
   });
 
   // ── EMPLOYEE INFO SHEET ──
@@ -1415,9 +1425,10 @@ function buildEmployeePDF(info) {
     doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...MIDTEXT);doc.text(f,ML,y);
     doc.setDrawColor(...MIDGRAY);doc.setLineWidth(0.75);doc.line(ML+doc.getTextWidth(f)+8,y,MR,y);y+=22;
   });
-  y+=12;
+  y+=20;
+  if(y>H-50){y=addEmpPg();}
   doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
-  doc.text('Employee signature:',ML,y);doc.setDrawColor(...NAVY);doc.setLineWidth(0.75);doc.line(ML+110,y,MR-80,y);
+  doc.text('Employee signature:',ML,y);doc.setDrawColor(...NAVY);doc.setLineWidth(0.75);doc.line(ML+115,y,MR-80,y);
   doc.text('Date:',MR-70,y);doc.line(MR-40,y,MR,y);
 
   // ── I-9 ──
@@ -1496,8 +1507,9 @@ function buildEmployeePDF(info) {
   drawCheckbox(doc,ML+90,y+6,9);doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...DKTEXT);doc.text('Checking',ML+104,y);
   drawCheckbox(doc,ML+180,y+6,9);doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...DKTEXT);doc.text('Savings',ML+194,y);y+=22;
   y+=10;y=bodyText(doc,`I authorize ${info.biz_name} and its payroll processor, Martinez Accounting Inc., to initiate credit entries (deposits) to my bank account. I understand a prenote may be sent before the first live deposit. My first paycheck may be issued as a paper check while the account is verified.`,ML,y,TW);
-  y+=12;
-  doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...MIDTEXT);doc.text('Employee signature:',ML,y);doc.setDrawColor(...NAVY);doc.setLineWidth(0.75);doc.line(ML+115,y,MR-80,y);doc.text('Date:',MR-70,y);doc.line(MR-40,y,MR,y);
+  y+=20;
+  if(y>H-50){y=addEmpPg();}
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);doc.text('Employee signature:',ML,y);doc.setDrawColor(...NAVY);doc.setLineWidth(0.75);doc.line(ML+115,y,MR-80,y);doc.text('Date:',MR-70,y);doc.line(MR-40,y,MR,y);
 
   // ── ACKNOWLEDGMENT ──
   y=addEmpPg();
@@ -1517,9 +1529,9 @@ function buildEmployeePDF(info) {
     if(y>H-60){y=addEmpPg();}
     drawCheckbox(doc,ML,y+8,9);
     doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(...DKTEXT);
-    const lines=doc.splitTextToSize(item,TW-18);doc.text(lines,ML+18,y+2);y+=lines.length*14+4;
+    const lines=doc.splitTextToSize(item,TW-18);doc.text(lines,ML+18,y+2);y+=lines.length*14+8;
   });
-  y+=16;
+  y+=20;
   // Sig blocks
   const drawEmpSig=(label,name,bx,by,bw)=>{
     setColor(doc,[230,241,251]);doc.rect(bx,by,bw,18,'F');
@@ -1533,7 +1545,32 @@ function buildEmployeePDF(info) {
   };
   if(y>H-160){y=addEmpPg();}
   drawEmpSig('EMPLOYEE','',ML,y,TW);y+=80;
-  drawEmpSig(`SUPERVISOR / ${info.biz_name.toUpperCase()}  —  I-9 documents verified: □ Yes  □ No`,'',ML,y,TW);y+=70;
+  // Supervisor sig block with drawn checkboxes for I-9 verification
+  {
+    const bx=ML, by=y, bw=TW;
+    setColor(doc,[230,241,251]);doc.rect(bx,by,bw,18,'F');
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);
+    doc.text(`SUPERVISOR  /  ${info.biz_name.toUpperCase()}`,bx+8,by+12);
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
+    doc.text('Signature',bx+8,by+36);doc.text('Print full legal name',bx+bw*0.45,by+36);doc.text('Date',bx+bw*0.78,by+36);
+    doc.setDrawColor(...NAVY);doc.setLineWidth(0.75);
+    doc.line(bx+8,by+52,bx+bw*0.42,by+52);
+    doc.line(bx+bw*0.45,by+52,bx+bw*0.75,by+52);
+    doc.line(bx+bw*0.78,by+52,bx+bw-8,by+52);
+    // I-9 verified checkboxes
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...MIDTEXT);
+    doc.text('I-9 documents verified:',bx+8,by+68);
+    drawCheckbox(doc,bx+140,by+74,9);
+    doc.setFont('helvetica','normal');doc.text('Yes',bx+154,by+68);
+    drawCheckbox(doc,bx+185,by+74,9);
+    doc.text('No',bx+199,by+68);
+    doc.setFont('helvetica','normal');doc.text('Forms received complete:',bx+bw*0.5,by+68);
+    drawCheckbox(doc,bx+bw*0.5+148,by+74,9);
+    doc.text('Yes',bx+bw*0.5+162,by+68);
+    drawCheckbox(doc,bx+bw*0.5+183,by+74,9);
+    doc.text('No',bx+bw*0.5+197,by+68);
+    y+=90;
+  }
   doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(...MIDTEXT);
   doc.text('Return completed forms to your supervisor. Payroll administered by Martinez Accounting Inc. | 1004 F Street, Reedley, CA 93654 | 559-743-7365',W/2,y,{align:'center',maxWidth:TW});
 
