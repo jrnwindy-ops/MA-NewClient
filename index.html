@@ -576,7 +576,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var n,r,i,a,
     <div class="field-grid">
       <div class="section-div">Monthly service tier</div>
       <div class="toggle-group" id="service-options">
-        <label class="toggle-item selected" onclick="selectService(this,'Full-Service Payroll (up to 5 employees)','$500/month')"><input type="radio" name="service" value="Full-Service Payroll (up to 5 employees)" checked/><div style="flex:1"><div class="toggle-label">Full-Service Payroll</div><div class="toggle-desc">Up to 5 employees. All tax filings, direct deposit, W-2s, new hire reporting.</div><div class="toggle-price">$500 / month</div></div></label>
+        <label class="toggle-item selected" onclick="selectService(this,'Full-Service Payroll (up to 5 employees)','$500/month')"><input type="radio" name="service" value="Full-Service Payroll (up to 5 employees)" checked/><div style="flex:1"><div class="toggle-label">Full-Service Payroll</div><div class="toggle-desc">Up to 5 employees — includes payroll &amp; bookkeeping. Additional employees $20/mo each.</div><div class="toggle-price">$500 / month</div></div></label>
         <label class="toggle-item" onclick="selectService(this,'Bookkeeping Only','$400/month')"><input type="radio" name="service" value="Bookkeeping Only"/><div style="flex:1"><div class="toggle-label">Bookkeeping Only</div><div class="toggle-desc">Monthly reconciliation, financial statements, expense tracking. No payroll.</div><div class="toggle-price">$400 / month</div></div></label>
       </div>
 
@@ -1083,7 +1083,7 @@ function buildClientPDF(info) {
     doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);doc.text(period,x+10,fy);fy+=14;
     items.forEach(item=>{drawCheckmark(doc,x+10,fy-4);doc.setFontSize(9);doc.setTextColor(...DKTEXT);doc.text(item,x+24,fy,{maxWidth:cw-32});fy+=13;});
   };
-  const payrollItems=['Full payroll processing (up to 5 employees)','Federal & California state tax filing','Direct deposit / ACH processing','New hire reporting','Annual W-2 preparation & filing','California EDD reporting'];
+  const payrollItems=['Full payroll processing (up to 5 employees)','Monthly bookkeeping & reconciliation','Federal & California state tax filing','Direct deposit / ACH processing','New hire reporting','Annual W-2 preparation & filing','California EDD reporting','+$20/mo per employee over 5'];
   const bkItems=['Monthly bookkeeping & reconciliation','Chart of accounts maintenance','Monthly financial statements','Vendor and expense tracking','Dedicated accounting representative'];
   const cw2=(TW-10)/2, ch=Math.max(140, 60+payrollItems.length*14);
   const isPayroll=info.service_tier.toLowerCase().includes('payroll');
@@ -1101,7 +1101,7 @@ function buildClientPDF(info) {
   }
 
   y+=8;y=h3(doc,'Fee Notes',ML,y);
-  const feeNotes=['Additional employees beyond 5 are subject to a per-employee surcharge.','Fees are invoiced monthly and due within 15 days of invoice date.','A late fee of 1.5% per month applies to balances more than 30 days past due.','Fee schedule is subject to change with 30 days written notice.'];
+  const feeNotes=['Full-Service plan includes payroll and bookkeeping. Additional employees beyond the included 5 are billed at $20.00 per employee per month, added to the following month\'s invoice.','Fees are invoiced monthly and due within 15 days of invoice date.','A late fee of 1.5% per month applies to balances more than 30 days past due.','Fee schedule is subject to change with 30 days written notice.'];
   feeNotes.forEach(n=>{y=bulletItem(doc,n,ML,y,TW);});
 
   // ── RESPONSIBILITIES ──
@@ -1220,7 +1220,7 @@ function buildClientPDF(info) {
     ['1. Scope of Services',[`Service Provider agrees to provide ${info.service_tier} as described in the Fee Schedule. Services include: calculation of gross wages, deductions, and net pay; preparation and filing of federal and California payroll tax returns; direct deposit processing; employee pay stubs; annual W-2 preparation; and new hire reporting.`,'Services are limited to California-based employees unless otherwise agreed in writing.']],
     ['2. Client Obligations',['Client shall provide accurate and complete payroll data no later than 2 business days before each scheduled check date.',`Client shall submit all bookkeeping records by the 15th of the following month. Client is solely responsible for the accuracy of all information provided.`,'Client shall promptly notify Service Provider of all new hires, terminations, pay rate changes, and any changes to business structure.','Client shall maintain adequate funds in the designated payroll bank account to cover all net payroll and tax obligations.']],
     ['3. Tax Filing and Compliance',['Service Provider will prepare and file all required federal and California payroll tax returns and remit payroll tax deposits on Client\'s behalf, provided Client has funded the account and all required tax accounts are in good standing.','Service Provider shall not be liable for penalties resulting from Client\'s failure to provide timely or accurate data.']],
-    ['4. Fees and Payment',[`Client agrees to pay the monthly flat fee: ${info.service_tier} at ${info.monthly_fee}. Fees are invoiced monthly and due within 15 days of invoice date.`,
+    ['4. Fees and Payment',[`Client agrees to pay the monthly flat fee: ${info.service_tier} at ${info.monthly_fee}, which includes payroll and bookkeeping services for up to 5 employees. For each employee in excess of 5, an additional fee of $20.00 per employee per month will be added to the following month's invoice. Fees are invoiced monthly and due within 15 days of invoice date.`,
       ...(info.sales_tax?['In addition to the monthly fee, Client agrees to pay $50.00 per month for quarterly California CDTFA sales tax return preparation and filing.']:[]),
       ...(info.llc_setup?['Client agrees to pay a one-time setup fee of $1,200.00 for California LLC formation services. This fee is due upon execution and is non-refundable once filing has been initiated.']:[]),
       'Accounts more than 30 days past due are subject to a monthly late fee of 1.5% of the outstanding balance.']],
