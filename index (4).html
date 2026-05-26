@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Martinez Accounting — New Client Onboarding</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#0C3660;--blue:#185FA5;--blue-lt:#E6F1FB;--teal:#0F6E56;--teal-lt:#E1F5EE;
+  --amber:#854F0B;--amber-lt:#FAEEDA;--red:#A32D2D;--red-lt:#FCEBEB;
+  --g50:#F8F7F4;--g100:#F1EFE8;--g200:#D9D7CE;--g400:#9B9890;--g600:#5F5E5A;--g900:#2C2C2A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;font-size:15px;color:var(--g900);background:var(--g50);min-height:100vh}
+.top-bar{background:var(--navy);border-bottom:3px solid var(--teal);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
+.top-bar-logo{width:36px;height:36px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-family:'DM Serif Display',serif;font-size:18px;color:white;flex-shrink:0}
+.top-bar-name{font-size:15px;font-weight:600;color:white}.top-bar-sub{font-size:11px;color:rgba(181,212,244,.85);margin-top:1px}
+.top-bar-badge{font-size:11px;font-weight:500;padding:4px 12px;border-radius:99px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.15)}
+.page{max-width:860px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+.page-title{font-family:'DM Serif Display',serif;font-size:30px;color:var(--navy);margin-bottom:4px}
+.page-sub{font-size:14px;color:var(--g600);margin-bottom:2rem}
+.steps{display:flex;gap:0;margin-bottom:2.5rem}
+.step{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;cursor:pointer}
+.step:not(:last-child)::after{content:'';position:absolute;top:18px;left:50%;width:100%;height:2px;background:var(--g200);z-index:0}
+.step.done:not(:last-child)::after{background:var(--teal)}
+.step-dot{width:36px;height:36px;border-radius:50%;border:2px solid var(--g200);background:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--g400);z-index:1;transition:all .2s}
+.step.active .step-dot{border-color:var(--blue);background:var(--blue);color:white}
+.step.done .step-dot{border-color:var(--teal);background:var(--teal);color:white}
+.step-label{font-size:11px;color:var(--g400);margin-top:6px;font-weight:500;text-align:center}
+.step.active .step-label{color:var(--blue)}.step.done .step-label{color:var(--teal)}
+.card{background:white;border-radius:14px;padding:1.75rem 2rem;box-shadow:0 2px 12px rgba(12,54,96,.10);margin-bottom:1.25rem;display:none}
+.card.active{display:block;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--navy);margin-bottom:4px}
+.card-sub{font-size:13px;color:var(--g600);margin-bottom:1.5rem}
+.field-grid{display:grid;gap:1rem}.field-grid-2{grid-template-columns:1fr 1fr}.field-grid-3{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:600px){.field-grid-2,.field-grid-3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:600;color:var(--g600);text-transform:uppercase;letter-spacing:.05em}
+.field label span.req{color:var(--red);margin-left:2px}
+.field label span.hint{font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--g400)}
+.field input,.field select,.field textarea{padding:9px 12px;font-size:14px;font-family:'DM Sans',sans-serif;border:1.5px solid var(--g200);border-radius:8px;background:white;color:var(--g900);transition:border-color .15s,box-shadow .15s;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(24,95,165,.12)}
+.field textarea{resize:vertical;min-height:80px}
+.section-div{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);padding:1rem 0 .5rem;border-top:1px solid var(--g100);margin-top:.5rem}
+.section-div:first-child{border-top:none;padding-top:0;margin-top:0}
+.toggle-group{display:flex;flex-direction:column;gap:8px}
+.toggle-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1.5px solid var(--g200);border-radius:8px;cursor:pointer;transition:all .15s}
+.toggle-item:hover{border-color:var(--blue);background:var(--blue-lt)}
+.toggle-item input[type=checkbox],.toggle-item input[type=radio]{margin-top:2px;accent-color:var(--blue);width:15px;height:15px;flex-shrink:0}
+.toggle-item.selected{border-color:var(--blue);background:var(--blue-lt)}
+.toggle-label{font-size:14px;font-weight:500;color:var(--g900)}.toggle-desc{font-size:12px;color:var(--g600);margin-top:2px}
+.toggle-price{font-size:13px;font-weight:600;color:var(--teal);margin-top:2px}
+.notice{border-radius:8px;padding:12px 14px;font-size:13px;display:flex;gap:10px;margin-top:12px}
+.notice-info{background:var(--blue-lt);color:var(--navy);border-left:3px solid var(--blue)}
+.notice-amber{background:var(--amber-lt);color:var(--amber);border-left:3px solid var(--amber)}
+.notice-teal{background:var(--teal-lt);color:var(--teal);border-left:3px solid var(--teal)}
+.notice strong{font-weight:600;display:block;margin-bottom:2px}
+.review-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.review-block{background:var(--g50);border-radius:10px;padding:1rem 1.25rem}
+.review-block-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:10px}
+.review-row{display:flex;gap:8px;margin-bottom:5px;font-size:13px}
+.review-row .lbl{color:var(--g600);min-width:110px;flex-shrink:0}.review-row .val{color:var(--g900);font-weight:500}
+.gen-box{text-align:center;padding:2rem;display:none}.gen-box.active{display:block}
+.gen-spinner{width:48px;height:48px;border:3px solid var(--blue-lt);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.gen-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);margin-bottom:6px}
+.gen-sub{font-size:14px;color:var(--g600);margin-bottom:1.5rem}.gen-status{font-size:13px;color:var(--blue);min-height:20px}
+.success-box{text-align:center;padding:1.5rem 1rem;display:none}.success-box.active{display:block}
+.success-icon{width:64px;height:64px;background:var(--teal-lt);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 1rem}
+.success-title{font-family:'DM Serif Display',serif;font-size:24px;color:var(--navy);margin-bottom:6px}
+.success-sub{font-size:14px;color:var(--g600);margin-bottom:1.5rem}
+.dl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:480px;margin:0 auto 1.5rem}
+.dl-btn{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s}
+.dl-btn-primary{background:var(--blue);color:white}.dl-btn-primary:hover{background:var(--navy)}
+.dl-btn-secondary{background:var(--teal-lt);color:var(--teal);border:1.5px solid var(--teal)}.dl-btn-secondary:hover{background:var(--teal);color:white}
+.btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:1.75rem}
+.btn{padding:9px 22px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-primary{background:var(--blue);color:white}.btn-primary:hover{background:var(--navy)}
+.btn-secondary{background:white;color:var(--g600);border:1.5px solid var(--g200)}.btn-secondary:hover{border-color:var(--g400);color:var(--g900)}
+.btn-generate{background:var(--teal);color:white;padding:11px 28px;font-size:15px}.btn-generate:hover{background:var(--navy)}
+.req-note{font-size:12px;color:var(--g600);margin-bottom:1.25rem}
+.req-note span{color:var(--red)}
+.llc-panel{display:none;margin-top:1rem;border:1.5px solid var(--blue);border-radius:12px;overflow:hidden}
+.llc-panel-hdr{background:var(--blue);padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.llc-panel-body{padding:1.25rem 1.5rem;background:white;display:flex;flex-direction:column;gap:1rem}
+.member-row{border:1px solid var(--g200);border-radius:8px;padding:12px 14px;margin-bottom:8px;background:var(--g50)}
+.member-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div style="display:flex;align-items:center;gap:12px">
+    <div class="top-bar-logo">M</div>
+    <div>
+      <div class="top-bar-name">Martinez Accounting Inc.</div>
+      <div class="top-bar-sub">New Client Onboarding Tool</div>
+    </div>
+  </div>
+  <div class="top-bar-badge">Staff Portal</div>
+</div>
+
+<div class="page">
+  <div class="page-title">New Client Onboarding</div>
+  <div class="page-sub">Fill in the client details. Both the client onboarding package and new employee package will be generated as PDFs ready to download and print.</div>
+
+  <div class="steps">
+    <div class="step active" id="step-1"><div class="step-dot">1</div><div class="step-label">Business Info</div></div>
+    <div class="step" id="step-2"><div class="step-dot">2</div><div class="step-label">Payroll Setup</div></div>
+    <div class="step" id="step-3"><div class="step-dot">3</div><div class="step-label">Services & Fees</div></div>
+    <div class="step" id="step-4"><div class="step-dot">4</div><div class="step-label">Review & Generate</div></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="card active" id="card-1">
+    <div class="card-title">Client Business Information</div>
+    <div class="card-sub">Enter the client's legal business details.</div>
+    <div class="req-note">Fields marked <span>*</span> are required.</div>
+    <div class="field-grid">
+      <div class="section-div">Business details</div>
+      <div class="field-grid field-grid-2">
+        <div class="field"><label>Legal business name <span class="req">*</span></label><input id="biz_name" placeholder="e.g. Preheim Pools LLC"/></div>
+        <div class="field"><label>DBA <span class="hint">(if different)</span></label><input id="biz_dba" placeholder="Doing business as..."/></div>
+      </div>
+      <div class="field"><label>Business address <span class="req">*</span></label><input id="biz_address" placeholder="Street, City, State, ZIP"/></div>
+      <div class="field-grid field-grid-2">
+        <div class="field"><label>Business phone <span class="req">*</span></label><input id="biz_phone" type="tel" placeholder="559-000-0000"/></div>
+        <div class="field"><label>Business email</label><input id="biz_email" type="email" placeholder="owner@business.com"/></div>
+      </div>
+      <div class="field-grid field-grid-2">
+        <div class="field"><label>EIN</label><input id="ein" placeholder="XX-XXXXXXX"/></div>
+        <div class="field"><label>Business entity type <span class="req">*</span></label>
+          <select id="entity_type"><option value="">— Select —</option><option>Sole Proprietorship</option><option>Single-Member LLC</option><option>Multi-Member LLC</option><option>S-Corporation</option><option>C-Corporation</option><option>Partnership</option></select>
+        </div>
+      </div>
+      <div class="section-div">Primary contact</div>
+      <div class="field-grid field-grid-2">
+        <div class="field"><label>Owner / primary contact name <span class="req">*</span></label><input id="contact" placeholder="Full legal name"/></div>
+        <div class="field"><label>Contact title / role</label><input id="contact_title" placeholder="e.g. Owner, CEO"/></div>
+      </div>
+      <div class="field-grid field-grid-2">
+        <div class="field"><label>State of employment <span class="req">*</span></label>
+          <select id="state"><option value="California" selected>California</option><option>Arizona</option><option>Nevada</option><option>Oregon</option><option>Texas</option><option>Washington</option><option>Other</option></select>
+        </div>
+        <div class="field"><label>Contact phone</label><input id="contact_phone" type="tel" placeholder="559-000-0000"/></div>
+      </div>
+      <div class="section-div">Your details</div>
+      <div class="field-grid field-grid-2">
+        <div class="field"><label>Martinez Accounting rep name <span class="req">*</span></label><input id="rep_name" placeholder="Your full name"/></div>
+        <div class="field"><label>Date onboarding started</label><input id="start_date" type="date"/></div>
+      </div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="nextStep(1)">Next — Payroll Setup →</button></div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="card" id="card-2">
+    <div class="card-title">Payroll Configuration</div>
+    <div class="card-sub">Set up the client's pay schedule and payroll details.</div>
+    <div class="field-grid">
+      <div class="section-div">Pay schedule</div>
+      <div class="field-grid field-grid-2">
+        <div class="field"><label>Pay frequency <span class="req">*</span></label>
+          <select id="pay_freq"><option>Weekly</option><option>Bi-weekly</option><option>Semi-monthly</option><option>Monthly</option></select>
+        </div>
+        <div class="field"><label>First payroll date</label><input id="first_payroll" type="date"/></div>
+      </div>
+      <div class="field-grid field-grid-2">
+        <div class="field"><label>Number of employees</label><input id="emp_count" type="number" min="1" placeholder="e.g. 4"/></div>
+        <div class="field"><label>Pay delivery method</label>
+          <select id="pay_delivery"><option>Direct deposit (ACH)</option><option>Paper checks</option><option>Both</option></select>
+        </div>
+      </div>
+      <div class="section-div">Employee classification</div>
+      <div class="field"><label>Primary employee type <span class="req">*</span></label></div>
+      <div class="toggle-group">
+        <label class="toggle-item" onclick="selectToggle(this,'emp_type')"><input type="radio" name="emp_type" value="Hourly (non-exempt)" checked/><div><div class="toggle-label">Hourly — Non-Exempt</div><div class="toggle-desc">Eligible for overtime. California daily OT rules apply.</div></div></label>
+        <label class="toggle-item" onclick="selectToggle(this,'emp_type')"><input type="radio" name="emp_type" value="Salaried (exempt)"/><div><div class="toggle-label">Salaried — Exempt</div><div class="toggle-desc">Must meet CA salary threshold ($66,560/yr min). Compliance review required.</div></div></label>
+        <label class="toggle-item" onclick="selectToggle(this,'emp_type')"><input type="radio" name="emp_type" value="Mixed (hourly and salaried)"/><div><div class="toggle-label">Mixed — Both types</div><div class="toggle-desc">Hourly and salaried employees on same payroll.</div></div></label>
+      </div>
+      <div class="section-div">Prior payroll</div>
+      <div class="toggle-group">
+        <label class="toggle-item selected" onclick="selectToggle(this,'midyear')"><input type="radio" name="midyear" value="no" checked/><div><div class="toggle-label">No — starting fresh</div><div class="toggle-desc">First payroll for this business or new calendar year.</div></div></label>
+        <label class="toggle-item" onclick="selectToggle(this,'midyear')"><input type="radio" name="midyear" value="yes"/><div><div class="toggle-label">Yes — mid-year transfer</div><div class="toggle-desc">YTD balances from prior processor required before first run.</div></div></label>
+      </div>
+      <div id="midyear-notice" class="notice notice-amber" style="display:none"><div><strong>Action required — prior YTD data needed</strong>Request YTD wage, tax, and deduction totals from the prior payroll processor before the first run.</div></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="prevStep(2)">← Back</button>
+      <button class="btn btn-primary" onclick="nextStep(2)">Next — Services & Fees →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="card" id="card-3">
+    <div class="card-title">Services & Fees</div>
+    <div class="card-sub">Select the services this client is enrolling in.</div>
+    <div class="field-grid">
+      <div class="section-div">Monthly service tier</div>
+      <div class="toggle-group" id="service-options">
+        <label class="toggle-item selected" onclick="selectService(this,'Full-Service Payroll (up to 5 employees)','$500/month')"><input type="radio" name="service" value="Full-Service Payroll (up to 5 employees)" checked/><div style="flex:1"><div class="toggle-label">Full-Service Payroll</div><div class="toggle-desc">Up to 5 employees. All tax filings, direct deposit, W-2s, new hire reporting.</div><div class="toggle-price">$500 / month</div></div></label>
+        <label class="toggle-item" onclick="selectService(this,'Bookkeeping Only','$400/month')"><input type="radio" name="service" value="Bookkeeping Only"/><div style="flex:1"><div class="toggle-label">Bookkeeping Only</div><div class="toggle-desc">Monthly reconciliation, financial statements, expense tracking. No payroll.</div><div class="toggle-price">$400 / month</div></div></label>
+      </div>
+
+      <div class="section-div">Add-on services</div>
+      <div class="toggle-group">
+        <label class="toggle-item" id="sales-tax-toggle" onclick="toggleSalesTax(this)"><input type="checkbox" id="sales_tax"/><div style="flex:1"><div class="toggle-label">Quarterly Sales Tax Returns</div><div class="toggle-desc">California CDTFA return preparation and filing, quarterly.</div><div class="toggle-price">$50 / month (billed monthly, filed quarterly)</div></div></label>
+      </div>
+      <div id="sales-tax-notice" class="notice notice-amber" style="display:none"><div><strong>Sales tax filing included</strong>The $50/month add-on will appear in the fee schedule, service agreement, and acknowledgment page.</div></div>
+
+      <div class="section-div">One-time services</div>
+      <div class="toggle-group">
+        <label class="toggle-item" id="llc-toggle" onclick="toggleLLC(this)"><input type="checkbox" id="llc_setup"/><div style="flex:1"><div class="toggle-label">California LLC Formation</div><div class="toggle-desc">Articles of Organization, Statement of Information (LLC-12), Operating Agreement, EIN application.</div><div class="toggle-price">$1,200 one-time fee</div></div></label>
+      </div>
+
+      <!-- LLC Detail Panel -->
+      <div class="llc-panel" id="llc-details">
+        <div class="llc-panel-hdr">
+          <div style="font-size:13px;font-weight:600;color:white">California LLC Formation Details</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.75)">Required to file Articles of Organization</div>
+        </div>
+        <div class="llc-panel-body">
+          <div class="field-grid field-grid-2">
+            <div class="field"><label>Proposed LLC name <span class="req">*</span> <span class="hint">must end in "LLC" or "L.L.C."</span></label><input id="llc_name" placeholder="e.g. Preheim Pools LLC"/></div>
+            <div class="field"><label>Alternate LLC name <span class="hint">if first choice unavailable</span></label><input id="llc_name_alt" placeholder="e.g. Preheim Pool Services LLC"/></div>
+          </div>
+          <div class="field-grid field-grid-2">
+            <div class="field"><label>Principal business address <span class="req">*</span> <span class="hint">no PO Box</span></label><input id="llc_address" placeholder="Street, City, CA ZIP"/></div>
+            <div class="field"><label>Mailing address <span class="hint">if different from above</span></label><input id="llc_mailing" placeholder="Leave blank if same"/></div>
+          </div>
+          <div class="field-grid field-grid-2">
+            <div class="field"><label>LLC type <span class="req">*</span></label>
+              <select id="llc_type"><option value="Single-Member LLC">Single-Member LLC (one owner)</option><option value="Multi-Member LLC">Multi-Member LLC (two or more owners)</option><option value="Manager-Managed LLC">Manager-Managed LLC</option></select>
+            </div>
+            <div class="field"><label>Business purpose / industry <span class="req">*</span></label><input id="llc_purpose" placeholder="e.g. Pool installation and maintenance"/></div>
+          </div>
+          <div class="field-grid field-grid-2">
+            <div class="field"><label>Registered agent name <span class="req">*</span> <span class="hint">must be CA resident</span></label><input id="llc_agent_name" placeholder="Person or entity name"/></div>
+            <div class="field"><label>Registered agent address <span class="req">*</span> <span class="hint">CA street address, no PO Box</span></label><input id="llc_agent_address" placeholder="Street, City, CA ZIP"/></div>
+          </div>
+
+          <div style="border-top:1px solid var(--g100);padding-top:1rem">
+            <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:.5rem">LLC Members / Owners</div>
+            <div style="font-size:12px;color:var(--g600);margin-bottom:.75rem">Add every member (owner). Each member needs a full legal name, home address, and ownership percentage. SSN/ITIN is required for the EIN application.</div>
+            <div id="members-list"></div>
+            <button type="button" class="btn btn-secondary" onclick="addMember()" style="margin-top:8px;font-size:13px;padding:7px 16px">+ Add member</button>
+          </div>
+
+          <div style="border-top:1px solid var(--g100);padding-top:1rem">
+            <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:.75rem">Additional Details</div>
+            <div class="field-grid field-grid-2">
+              <div class="field"><label>Fiscal year end</label>
+                <select id="llc_fiscal"><option value="December 31">December 31 (calendar year — most common)</option><option value="March 31">March 31</option><option value="June 30">June 30</option><option value="September 30">September 30</option></select>
+              </div>
+              <div class="field"><label>LLC dissolution</label>
+                <select id="llc_dissolution"><option value="Perpetual">Perpetual (no end date — most common)</option><option value="Specify date">Specific end date</option></select>
+              </div>
+            </div>
+            <div class="field" style="margin-top:.75rem"><label>Additional notes for LLC formation</label><textarea id="llc_notes" placeholder="Special instructions, existing DBA names, prior business history, or other details Martinez Accounting should know..." style="min-height:60px"></textarea></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="llc-notice" class="notice notice-teal" style="display:none;margin-top:.75rem"><div><strong>LLC setup included</strong>The $1,200 one-time fee and LLC formation details will appear in the service agreement and acknowledgment page.</div></div>
+
+      <div class="section-div">Notes for this client</div>
+      <div class="field"><label>Internal notes <span class="hint">(not printed in package)</span></label><textarea id="notes" placeholder="Any special circumstances, flags, or reminders for your records..."></textarea></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="prevStep(3)">← Back</button>
+      <button class="btn btn-primary" onclick="nextStep(3)">Next — Review →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="card" id="card-4">
+    <div class="card-title">Review & Generate Packages</div>
+    <div class="card-sub">Confirm all details are correct before generating.</div>
+    <div class="review-grid" id="review-content"></div>
+    <div id="form-section">
+      <div class="notice notice-info" style="margin-top:1.25rem"><div><strong>Two PDFs will be generated and downloaded</strong>(1) Client Onboarding Package — welcome letter, fee schedule, service agreement, bookkeeping checklist, and signature page.<br>(2) New Employee Package — I-9 instructions, W-4, CA DE 4, direct deposit form, and acknowledgment page.</div></div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="prevStep(4)">← Back</button>
+        <button class="btn btn-generate" onclick="generatePackages()">⬇ Generate Both Packages</button>
+      </div>
+    </div>
+    <div class="gen-box" id="gen-box">
+      <div class="gen-spinner"></div>
+      <div class="gen-title">Generating your packages…</div>
+      <div class="gen-sub">Building both PDFs — this takes just a moment.</div>
+      <div class="gen-status" id="gen-status">Starting up…</div>
+    </div>
+    <div class="success-box" id="success-box">
+      <div class="success-icon">✓</div>
+      <div class="success-title">Packages Ready</div>
+      <div class="success-sub">Both PDFs have been downloaded to your computer. Check your Downloads folder.</div>
+      <div class="dl-grid">
+        <button class="dl-btn dl-btn-primary" onclick="reDownload('client')">📄 Re-download Client Package</button>
+        <button class="dl-btn dl-btn-secondary" onclick="reDownload('employee')">👤 Re-download Employee Package</button>
+      </div>
+      <button class="btn btn-secondary" onclick="resetForm()" style="margin:0 auto">Start new client →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let currentStep = 1;
+let selectedService = 'Full-Service Payroll (up to 5 employees)';
+let selectedMonthlyFee = '$500/month';
+let memberCount = 0;
+let lastData = null;
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function nextStep(from) { if (validateStep(from)) showStep(from + 1); }
+function prevStep(from) { showStep(from - 1); }
+function showStep(n) {
+  currentStep = n;
+  document.querySelectorAll('.card').forEach((c,i) => c.classList.toggle('active', i+1===n));
+  document.querySelectorAll('.step').forEach((s,i) => {
+    s.classList.remove('active','done');
+    if (i+1===n) s.classList.add('active');
+    else if (i+1<n) s.classList.add('done');
+  });
+  if (n===4) buildReview();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function validateStep(step) {
+  const req = {1:['biz_name','biz_address','biz_phone','contact','rep_name','entity_type'],2:[],3:[]};
+  let ok = true;
+  (req[step]||[]).forEach(id => {
+    const el = document.getElementById(id);
+    if (!el||!el.value.trim()) { el&&(el.style.borderColor='var(--red)'); ok=false; }
+    else el.style.borderColor='';
+  });
+  if (!ok) alert('Please fill in all required fields before continuing.');
+  return ok;
+}
+
+// ── Toggles ──────────────────────────────────────────────────────────────────
+function selectToggle(el, name) {
+  document.querySelectorAll(`input[name="${name}"]`).forEach(r => r.closest('.toggle-item').classList.remove('selected'));
+  el.classList.add('selected');
+  if (name==='midyear') document.getElementById('midyear-notice').style.display = el.querySelector('input').value==='yes' ? 'flex' : 'none';
+}
+function selectService(el, tier, fee) {
+  document.querySelectorAll('#service-options .toggle-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected'); selectedService=tier; selectedMonthlyFee=fee;
+}
+function toggleSalesTax(el) {
+  const cb = document.getElementById('sales_tax');
+  setTimeout(()=>{
+    const checked = cb.checked;
+    document.getElementById('sales-tax-toggle').classList.toggle('selected',checked);
+    document.getElementById('sales-tax-notice').style.display = checked?'flex':'none';
+  },0);
+}
+function toggleLLC(el) {
+  const cb = document.getElementById('llc_setup');
+  setTimeout(()=>{
+    const checked = cb.checked;
+    document.getElementById('llc-toggle').classList.toggle('selected',checked);
+    document.getElementById('llc-details').style.display = checked?'block':'none';
+    document.getElementById('llc-notice').style.display  = checked?'flex':'none';
+    if (checked && document.querySelectorAll('.member-row').length===0) addMember();
+  },0);
+}
+
+// ── LLC Members ──────────────────────────────────────────────────────────────
+function addMember(data) {
+  memberCount++;
+  const n = memberCount; const d = data||{};
+  document.getElementById('members-list').insertAdjacentHTML('beforeend',`
+    <div class="member-row" id="member-${n}">
+      <div class="member-hdr">
+        <div style="font-size:12px;font-weight:600;color:var(--navy)">Member ${n}</div>
+        <button type="button" onclick="removeMember(${n})" style="font-size:12px;color:var(--red);background:none;border:none;cursor:pointer">Remove</button>
+      </div>
+      <div class="field-grid field-grid-2" style="gap:.75rem">
+        <div class="field"><label>Full legal name <span class="req">*</span></label><input id="m${n}_name" value="${d.name||''}" placeholder="As on government ID"/></div>
+        <div class="field"><label>Ownership % <span class="req">*</span></label><input id="m${n}_pct" type="number" min="1" max="100" value="${d.pct||''}" placeholder="e.g. 50"/></div>
+        <div class="field"><label>Home address <span class="req">*</span></label><input id="m${n}_address" value="${d.address||''}" placeholder="Street, City, State, ZIP"/></div>
+        <div class="field"><label>Phone number</label><input id="m${n}_phone" type="tel" value="${d.phone||''}" placeholder="559-000-0000"/></div>
+        <div class="field"><label>Email address</label><input id="m${n}_email" type="email" value="${d.email||''}" placeholder="member@email.com"/></div>
+        <div class="field"><label>SSN / ITIN <span class="hint">for EIN application</span></label><input id="m${n}_ssn" value="${d.ssn||''}" placeholder="XXX-XX-XXXX"/></div>
+        <div class="field" style="grid-column:1/-1"><label>Role / title in LLC</label><input id="m${n}_title" value="${d.title||''}" placeholder="e.g. Managing Member, Member"/></div>
+      </div>
+    </div>`);
+}
+function removeMember(n) { const el=document.getElementById(`member-${n}`); if(el) el.remove(); }
+function collectMembers() {
+  const members=[];
+  document.querySelectorAll('.member-row').forEach(row=>{
+    const n=row.id.replace('member-','');
+    const name=document.getElementById(`m${n}_name`)?.value?.trim();
+    if(!name) return;
+    members.push({name, pct:document.getElementById(`m${n}_pct`)?.value||'', address:document.getElementById(`m${n}_address`)?.value||'', phone:document.getElementById(`m${n}_phone`)?.value||'', email:document.getElementById(`m${n}_email`)?.value||'', ssn:document.getElementById(`m${n}_ssn`)?.value||'', title:document.getElementById(`m${n}_title`)?.value||''});
+  });
+  return members;
+}
+
+// ── Review ───────────────────────────────────────────────────────────────────
+function buildReview() {
+  const v = id => document.getElementById(id)?.value||'—';
+  const r = (lbl,val) => `<div class="review-row"><span class="lbl">${lbl}</span><span class="val">${val||'—'}</span></div>`;
+  const empType = document.querySelector('input[name="emp_type"]:checked')?.value||'—';
+  const midyear = document.querySelector('input[name="midyear"]:checked')?.value==='yes' ? 'Yes — YTD data required' : 'No';
+  const llc = document.getElementById('llc_setup').checked;
+  const salesTax = document.getElementById('sales_tax').checked;
+  const fp = v('first_payroll')!=='—' ? new Date(v('first_payroll')+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : 'To be confirmed';
+  let html = `
+    <div class="review-block">${''}<div class="review-block-title">Business</div>${r('Business name',v('biz_name'))}${r('Address',v('biz_address'))}${r('Phone',v('biz_phone'))}${r('Entity type',v('entity_type'))}${r('EIN',v('ein')||'On file')}${r('State',v('state'))}</div>
+    <div class="review-block"><div class="review-block-title">Contact & Rep</div>${r('Contact name',v('contact'))}${r('Contact title',v('contact_title'))}${r('MA Rep',v('rep_name'))}</div>
+    <div class="review-block"><div class="review-block-title">Payroll Setup</div>${r('Pay frequency',v('pay_freq'))}${r('First payroll',fp)}${r('Employees',v('emp_count'))}${r('Classification',empType)}${r('Mid-year',midyear)}</div>
+    <div class="review-block"><div class="review-block-title">Services & Fees</div>${r('Monthly service',selectedService)}${r('Monthly fee',selectedMonthlyFee)}${salesTax?r('Sales tax','+$50/month'):''}${llc?r('LLC formation','$1,200 one-time'):''}</div>`;
+  if (llc) {
+    const members = collectMembers();
+    html += `<div class="review-block" style="grid-column:1/-1"><div class="review-block-title">California LLC Formation Details</div>${r('Proposed name',v('llc_name'))}${r('Alternate name',v('llc_name_alt')||'None')}${r('LLC type',v('llc_type'))}${r('Business purpose',v('llc_purpose'))}${r('Principal address',v('llc_address'))}${r('Registered agent',v('llc_agent_name'))}${r('Agent address',v('llc_agent_address'))}${r('Fiscal year',v('llc_fiscal'))}
+      <div style="margin-top:8px;font-size:12px;font-weight:600;color:var(--blue)">Members (${members.length})</div>${members.map(m=>`<div style="font-size:12px;padding:4px 0;border-bottom:1px solid var(--g100)"><strong>${m.name}</strong> — ${m.pct}% — ${m.address}</div>`).join('')}</div>`;
+  }
+  document.getElementById('review-content').innerHTML = html;
+}
+
+// ── Collect ──────────────────────────────────────────────────────────────────
+function collectData() {
+  const v = id => document.getElementById(id)?.value?.trim()||'';
+  const fp = v('first_payroll') ? new Date(v('first_payroll')+'T00:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : 'To be confirmed';
+  const llcChecked = document.getElementById('llc_setup').checked;
+  return {
+    rep_name: v('rep_name')||'Martinez Accounting Inc.',
+    biz_name: v('biz_name'), biz_address: v('biz_address'), biz_phone: v('biz_phone'),
+    contact: v('contact'), ein: v('ein')||'On file', state: v('state')||'California',
+    pay_freq: v('pay_freq')||'Weekly', first_payroll: fp,
+    service_tier: selectedService, monthly_fee: selectedMonthlyFee,
+    llc_setup: llcChecked, sales_tax: document.getElementById('sales_tax').checked,
+    llc_details: llcChecked ? {
+      llc_name: v('llc_name'), llc_name_alt: v('llc_name_alt'),
+      llc_address: v('llc_address'), llc_mailing: v('llc_mailing'),
+      llc_type: v('llc_type'), llc_purpose: v('llc_purpose'),
+      llc_agent_name: v('llc_agent_name'), llc_agent_address: v('llc_agent_address'),
+      llc_fiscal: v('llc_fiscal'), llc_dissolution: v('llc_dissolution'),
+      llc_notes: v('llc_notes'), members: collectMembers()
+    } : null
+  };
+}
+
+// ── PDF Helpers ──────────────────────────────────────────────────────────────
+const NAVY=[12,54,96], BLUE=[24,95,165], TEAL=[15,110,86], MIDGRAY=[136,135,128], LGRAY=[241,239,232], DKTEXT=[44,44,42], MIDTEXT=[95,94,90], WHITE=[255,255,255], RED=[163,45,45], AMBER=[133,79,11], AMBLT=[250,238,218];
+
+function newDoc() {
+  const {jsPDF} = window.jspdf;
+  return new jsPDF({orientation:'portrait',unit:'pt',format:'letter'});
+}
+
+function rgb(c){ return {r:c[0],g:c[1],b:c[2]}; }
+
+function setColor(doc, c, type='fill') {
+  if (type==='fill') doc.setFillColor(c[0],c[1],c[2]);
+  else doc.setDrawColor(c[0],c[1],c[2]);
+}
+
+function hdrBand(doc, pageW) {
+  setColor(doc,NAVY); doc.rect(0, 0, pageW, 50, 'F');
+  setColor(doc,TEAL); doc.rect(0, 50, pageW, 3, 'F');
+  doc.setFontSize(11); doc.setFont('helvetica','bold');
+  doc.setTextColor(255,255,255);
+  doc.text('MARTINEZ ACCOUNTING INC.', 54, 30);
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.setTextColor(181,212,244);
+  doc.text('1004 F Street, Reedley, CA 93654', 54, 43);
+  doc.setTextColor(159,225,203);
+  doc.text('New Client Onboarding Package', pageW-54, 37, {align:'right'});
+}
+
+function footer(doc, pageW, pageH, pageNum, totalPages) {
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.setTextColor(...MIDGRAY);
+  doc.text('CONFIDENTIAL — Martinez Accounting Inc. | New Client Onboarding Package', 54, pageH-18);
+  doc.text(`Page ${pageNum} of ${totalPages}`, pageW-54, pageH-18, {align:'right'});
+  doc.setDrawColor(...LGRAY); doc.setLineWidth(0.5);
+  doc.line(54, pageH-26, pageW-54, pageH-26);
+}
+
+function wrapText(doc, text, x, y, maxW, lineH) {
+  const lines = doc.splitTextToSize(text, maxW);
+  doc.text(lines, x, y);
+  return y + lines.length * lineH;
+}
+
+function sectionTag(doc, tag, x, y) {
+  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...BLUE);
+  doc.text(tag, x, y); return y+14;
+}
+
+function h1(doc, text, x, y) {
+  doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(...NAVY);
+  doc.text(text, x, y); return y+26;
+}
+
+function h2(doc, text, x, y) {
+  doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(...NAVY);
+  doc.text(text, x, y); return y+18;
+}
+
+function h3(doc, text, x, y) {
+  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...DKTEXT);
+  doc.text(text, x, y); return y+16;
+}
+
+function bodyText(doc, text, x, y, maxW) {
+  doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(...DKTEXT);
+  const lines = doc.splitTextToSize(text, maxW);
+  doc.text(lines, x, y); return y + lines.length*14 + 4;
+}
+
+function bulletItem(doc, text, x, y, maxW) {
+  doc.setFontSize(10); doc.setFont('helvetica','normal'); doc.setTextColor(...DKTEXT);
+  doc.text('\u2022', x, y);
+  const lines = doc.splitTextToSize(text, maxW-14);
+  doc.text(lines, x+12, y); return y + lines.length*14 + 3;
+}
+
+function hRule(doc, x, y, w, color) {
+  doc.setDrawColor(...(color||LGRAY)); doc.setLineWidth(0.5); doc.line(x, y, x+w, y); return y+8;
+}
+
+function checkIfNewPage(doc, y, pageH, margin, info, pageNum, totalPages, isEmpDoc) {
+  if (y > pageH - 80) {
+    doc.addPage();
+    pageNum++;
+    if (isEmpDoc) empHdrBand(doc, doc.internal.pageSize.getWidth(), info);
+    else hdrBand(doc, doc.internal.pageSize.getWidth());
+    footer(doc, doc.internal.pageSize.getWidth(), pageH, pageNum, totalPages);
+    return [margin + 60, pageNum];
+  }
+  return [y, pageNum];
+}
+
+// Label-value table row
+function infoRow(doc, label, value, x, y, w) {
+  const lw = w*0.35;
+  setColor(doc, LGRAY); doc.rect(x, y-10, lw, 22, 'F');
+  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...MIDTEXT);
+  doc.text(label, x+8, y+4);
+  doc.setFont('helvetica','normal'); doc.setTextColor(...DKTEXT);
+  const vlines = doc.splitTextToSize(value, w-lw-12);
+  doc.text(vlines, x+lw+8, y+4);
+  const rowH = Math.max(22, vlines.length*13+8);
+  doc.setDrawColor(...LGRAY); doc.setLineWidth(0.5); doc.line(x, y+rowH-10, x+w, y+rowH-10);
+  return y + rowH;
+}
+
+// ── CLIENT PDF ───────────────────────────────────────────────────────────────
+function buildClientPDF(info) {
+  const doc = newDoc();
+  const W = doc.internal.pageSize.getWidth();
+  const H = doc.internal.pageSize.getHeight();
+  const ML = 54, MR = W-54, TW = W-108;
+  const today = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+
+  // ── COVER PAGE ──
+  // Narrow navy header
+  setColor(doc,NAVY); doc.rect(0,0,W,50,'F');
+  setColor(doc,TEAL); doc.rect(0,50,W,3,'F');
+  doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+  doc.text('MARTINEZ ACCOUNTING INC.', ML, 30);
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(181,212,244);
+  doc.text('1004 F Street, Reedley, CA 93654', ML, 43);
+  doc.setTextColor(159,225,203);
+  doc.text('Payroll & Accounting Services', MR, 37, {align:'right'});
+
+  // Title block
+  let y = 130;
+  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLUE);
+  doc.text('NEW CLIENT ONBOARDING PACKAGE', W/2, y, {align:'center'});
+  y+=16; doc.setDrawColor(...NAVY); doc.setLineWidth(1.5);
+  doc.line(W/2-160,y,W/2+160,y); y+=5;
+  doc.setDrawColor(...TEAL); doc.setLineWidth(0.5); doc.line(W/2-160,y,W/2+160,y);
+
+  y+=60;
+  doc.setFontSize(12); doc.setFont('helvetica','normal'); doc.setTextColor(...MIDTEXT);
+  doc.text('Prepared for', W/2, y, {align:'center'});
+  y+=22;
+  doc.setFontSize(30); doc.setFont('helvetica','bold'); doc.setTextColor(...NAVY);
+  doc.text(info.biz_name, W/2, y, {align:'center'});
+  y+=16;
+  doc.setFontSize(11); doc.setFont('helvetica','normal'); doc.setTextColor(...MIDTEXT);
+  doc.text(info.biz_address, W/2, y, {align:'center'});
+
+  // Detail box near bottom
+  const bx=ML, bw=TW, bh=70, by=H-120;
+  setColor(doc,[248,247,244]); doc.rect(bx,by,bw,bh,'F');
+  doc.setDrawColor(211,209,199); doc.setLineWidth(0.5); doc.rect(bx,by,bw,bh,'S');
+  const cw=bw/3;
+  [[info.contact,'PRIMARY CONTACT'],[today,'DATE PREPARED'],[info.rep_name,'ASSIGNED REP']].forEach(([val,lbl],i)=>{
+    const cx=bx+cw*i;
+    if(i>0){doc.setDrawColor(211,209,199);doc.setLineWidth(0.5);doc.line(cx,by,cx,by+bh);}
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...MIDTEXT);
+    doc.text(lbl,cx+cw/2,by+22,{align:'center'});
+    doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);
+    doc.text(val||'—',cx+cw/2,by+46,{align:'center'});
+  });
+
+  // Bottom rules
+  doc.setDrawColor(...NAVY);doc.setLineWidth(1.5);doc.line(ML,H-36,MR,H-36);
+  doc.setDrawColor(...TEAL);doc.setLineWidth(0.5);doc.line(ML,H-30,MR,H-30);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...MIDGRAY);
+  doc.text('CONFIDENTIAL — Prepared by Martinez Accounting Inc.',W/2,H-16,{align:'center'});
+
+  // ── ESTIMATE TOTAL PAGES then build ──────────────────────────────────────
+  // We'll build sections tracking pages, then go back and add footers
+  // Using a simple approach: add page markers as we go
+
+  const pages = []; // track which page each section starts on
+  let pn = 1;
+
+  const addPg = () => { doc.addPage(); pn++; hdrBand(doc,W); return 70; };
+
+  // ── TABLE OF CONTENTS ──
+  y = addPg();
+  y = sectionTag(doc,'CONTENTS',ML,y);
+  y = h1(doc,"What's Inside Your Onboarding Package",ML,y);
+  y = hRule(doc,ML,y,TW,[181,212,244]);
+  const tocItems=[
+    ['1','Welcome Letter','A personal introduction from your Martinez Accounting team.'],
+    ['2','Your Payroll Setup Summary','Confirmed pay schedule, frequency, and configuration.'],
+    ['3','Fee Schedule','Monthly service fees and what\'s included.'],
+    ['4','Your Responsibilities as a Client','What we need from you to run payroll accurately and on time.'],
+    ['5','Monthly Bookkeeping Records','What to submit each month, the deadline, and document checklist.'],
+    ['6','Employee New Hire Checklist','Documents required for every new employee.'],
+    ['7','Payroll Submission Instructions','How and when to submit hours and changes each period.'],
+    ['8','Payroll Services Agreement','The terms of our engagement — please read and sign.'],
+    ['9','Acknowledgment & Signature Page','Sign and return to complete your onboarding.'],
+  ];
+  tocItems.forEach(([num,title,desc])=>{
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...BLUE);doc.text(num,ML,y);
+    doc.setFont('helvetica','bold');doc.setTextColor(...DKTEXT);doc.text(title,ML+22,y);
+    doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);doc.setFontSize(9);doc.text(desc,ML+22,y+13);
+    doc.setDrawColor(...LGRAY);doc.line(ML,y+20,MR,y+20);y+=28;
+  });
+
+  // ── WELCOME LETTER ──
+  y = addPg();
+  y = sectionTag(doc,'SECTION 1',ML,y);
+  y = h1(doc,'Welcome Letter',ML,y);
+  y = hRule(doc,ML,y,TW,[181,212,244]);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);doc.text(today,ML,y);y+=18;
+  doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(...DKTEXT);
+  doc.text(`Dear ${info.contact},`,ML,y);y+=18;
+  const welcomeParas=[
+    `On behalf of everyone here at Martinez Accounting Inc., welcome. We are truly glad to have ${info.biz_name} join our family of clients, and we look forward to being a reliable, trusted partner in the financial operations of your business.`,
+    'At Martinez Accounting, we take the complexity of payroll off your plate entirely. We handle the calculations, the tax withholdings, the deposits, the filings, and the compliance — so that you can focus on what you do best: running your business and serving your customers.',
+    'This onboarding package contains everything you need to get started. Please review each section carefully. When you are ready, sign and return the acknowledgment page at the end of this package.',
+    `Your point of contact is ${info.rep_name} at Martinez Accounting Inc., 1004 F Street, Reedley, CA 93654. We are always just a phone call or email away.`,
+    'We are honored by the trust you are placing in us, and we are committed to earning it every single pay period.',
+  ];
+  welcomeParas.forEach(p=>{
+    if(y>H-100){y=addPg();}
+    y=bodyText(doc,p,ML,y,TW);y+=4;
+  });
+  y+=12;doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(...DKTEXT);doc.text('Warm regards,',ML,y);y+=18;
+  doc.setFont('helvetica','bold');doc.text(info.rep_name,ML,y);y+=14;
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...MIDTEXT);doc.text('Martinez Accounting Inc.',ML,y);
+
+  // ── SETUP SUMMARY ──
+  y=addPg();
+  y=sectionTag(doc,'SECTION 2',ML,y); y=h1(doc,'Your Payroll Setup Summary',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  y=bodyText(doc,'Review carefully and notify your representative immediately if any details are incorrect before your first payroll is processed.',ML,y,TW);y+=8;
+  y=h2(doc,'Business Information',ML,y);
+  [['Legal business name',info.biz_name],['Business address',info.biz_address],['Business phone',info.biz_phone],['Owner / primary contact',info.contact],['EIN (on file)',info.ein],['State of employment',info.state]].forEach(([l,v])=>{if(y>H-80){y=addPg();}y=infoRow(doc,l,v,ML,y,TW);});
+  y+=10;y=h2(doc,'Payroll Configuration',ML,y);
+  [['Pay frequency',info.pay_freq],['First payroll date',info.first_payroll],['Pay delivery','Direct deposit (ACH) + employee pay stubs'],['Overtime policy','California law — 1.5x after 8 hrs/day or 40 hrs/week; 2x after 12 hrs/day'],['Tax deposit schedule','To be confirmed after lookback period review']].forEach(([l,v])=>{if(y>H-80){y=addPg();}y=infoRow(doc,l,v,ML,y,TW);});
+  y+=10;y=h2(doc,'Your Martinez Accounting Team',ML,y);
+  [['Assigned representative',info.rep_name],['Office address','1004 F Street, Reedley, CA 93654'],['Submission deadline','No later than 2 business days before check date'],['Service tier',info.service_tier]].forEach(([l,v])=>{if(y>H-80){y=addPg();}y=infoRow(doc,l,v,ML,y,TW);});
+
+  // ── FEE SCHEDULE ──
+  y=addPg();
+  y=sectionTag(doc,'SECTION 3',ML,y); y=h1(doc,'Fee Schedule',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  y=bodyText(doc,'Martinez Accounting offers straightforward, flat monthly pricing. No hidden fees. No per-check charges.',ML,y,TW);y+=10;
+
+  const drawFeeCard=(x,cw,ch,title,price,period,items,selected)=>{
+    const bg=selected?[230,241,251]:[241,239,232];
+    const bc=selected?BLUE:MIDGRAY;
+    setColor(doc,bg);doc.rect(x,y,cw,ch,'F');
+    if(selected){doc.setDrawColor(...bc);doc.setLineWidth(2);doc.rect(x,y,cw,ch,'S');}
+    if(selected){setColor(doc,BLUE);doc.rect(x,y,cw,14,'F');doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);doc.text('YOUR PLAN',x+cw/2,y+10,{align:'center'});}
+    let fy=y+(selected?20:10);
+    doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);doc.text(title,x+10,fy);fy+=16;
+    doc.setFontSize(18);doc.setFont('helvetica','bold');doc.setTextColor(...BLUE);doc.text(price,x+10,fy);fy+=16;
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);doc.text(period,x+10,fy);fy+=14;
+    items.forEach(item=>{doc.setFontSize(9);doc.setTextColor(...TEAL);doc.text('\u2713',x+10,fy);doc.setTextColor(...DKTEXT);doc.text(item,x+22,fy,{maxWidth:cw-30});fy+=13;});
+  };
+  const cw2=(TW-10)/2, ch=130;
+  const payrollItems=['Full payroll processing (up to 5 employees)','Federal & California state tax filing','Direct deposit / ACH processing','New hire reporting','Annual W-2 preparation & filing','California EDD reporting'];
+  const bkItems=['Monthly bookkeeping & reconciliation','Chart of accounts maintenance','Monthly financial statements','Vendor and expense tracking','Dedicated accounting representative'];
+  const isPayroll=info.service_tier.toLowerCase().includes('payroll');
+  drawFeeCard(ML,cw2,ch,'Full-Service Payroll','$500','per month / up to 5 employees',payrollItems,isPayroll);
+  drawFeeCard(ML+cw2+10,cw2,ch,'Bookkeeping Only','$400','per month',bkItems,!isPayroll);
+  y+=ch+10;
+
+  if(info.sales_tax){
+    setColor(doc,AMBLT);doc.rect(ML,y,TW,52,'F');
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...AMBER);doc.text('SALES TAX ADD-ON',ML+8,y+12);
+    doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);doc.text('Quarterly Sales Tax Returns',ML+8,y+26);
+    doc.setFontSize(18);doc.setFont('helvetica','bold');doc.setTextColor(...BLUE);doc.text('$50',ML+8,y+44);
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);doc.text('per month (billed monthly, filed quarterly)',ML+50,y+44);
+    y+=58;
+  }
+
+  y+=8;y=h3(doc,'Fee Notes',ML,y);
+  const feeNotes=['Additional employees beyond 5 are subject to a per-employee surcharge.','Fees are invoiced monthly and due within 15 days of invoice date.','A late fee of 1.5% per month applies to balances more than 30 days past due.','Fee schedule is subject to change with 30 days written notice.'];
+  feeNotes.forEach(n=>{y=bulletItem(doc,n,ML,y,TW);});
+
+  // ── RESPONSIBILITIES ──
+  y=addPg();
+  y=sectionTag(doc,'SECTION 4',ML,y); y=h1(doc,'Your Responsibilities as a Client',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  const respSections=[
+    ['Submit payroll data on time — every time',['Submit all hours worked, overtime, PTO, bonuses, and any pay changes by your agreed deadline (2 business days before check date).','California requires timely wage payment — late paychecks expose you to waiting time penalties. Contact us immediately if you anticipate a late submission.']],
+    ['Notify us of all new hires before their first paycheck',['Provide complete new hire information before their first pay period.','California and federal law require new hire reports within 20 days of hire. We file these on your behalf.','Use the Employee New Hire Checklist in Section 6 for every new employee.']],
+    ['Report terminations on or before the last day worked',['California law requires final pay on the day of termination for involuntary separations, and within 72 hours for resignations without notice.','Failure to provide timely final pay exposes you to California waiting time penalties of up to 30 days of daily wages.']],
+    ['Review and approve each payroll preview',['You will receive a payroll preview before each payroll is finalized. Your explicit approval is required before payroll processes.','Once payroll is submitted, corrections require an off-cycle run and may incur additional fees.']],
+    ['Maintain sufficient funds for payroll and taxes',['Ensure your payroll bank account is funded before the ACH origination date each period.','Returned ACH items result in failed direct deposits and potential tax deposit penalties.']],
+  ];
+  respSections.forEach(([title,bullets])=>{
+    if(y>H-100){y=addPg();}
+    y=h3(doc,title,ML,y);
+    bullets.forEach(b=>{if(y>H-80){y=addPg();}y=bulletItem(doc,b,ML+6,y,TW-6);});
+    y+=6;
+  });
+
+  // ── BOOKKEEPING RECORDS ──
+  y=addPg();
+  y=sectionTag(doc,'SECTION 5',ML,y); y=h1(doc,'Monthly Bookkeeping Records',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  y=bodyText(doc,'All bookkeeping records must be submitted to Martinez Accounting by the 15th of the month following the period (e.g., January records are due by February 15th).',ML,y,TW);
+  // Deadline box
+  setColor(doc,[252,235,235]);doc.rect(ML,y,TW,46,'F');
+  doc.setDrawColor(...RED);doc.setLineWidth(2);doc.line(ML,y,MR,y);
+  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...RED);doc.text('Monthly deadline:',ML+10,y+16);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('All records must be received by the',ML+115,y+16);
+  doc.setFont('helvetica','bold');doc.text('15th of the following month.',ML+10,y+30);
+  doc.setFont('helvetica','normal');doc.text('Late submissions delay your financial statements and may affect tax filing deadlines.',ML+10,y+42);
+  y+=56;
+  const bkSections=[
+    ['Bank & Credit Records',[['Bank statements — all accounts','Complete monthly statement for every business checking and savings account.'],['Credit card statements — all business cards','Complete statement for every business credit card used for business expenses.'],['Loan statements','Any business loan, line of credit, or equipment financing statement.']]],
+    ['Income Records',[['Deposit detail / sales records','Breakdown of what makes up each deposit — invoices paid, cash sales, online payments.'],['Invoices issued to customers','Copies of all invoices sent to customers during the month.'],['Payment processor reports','Monthly summary from Square, PayPal, Stripe, etc. showing gross sales and net deposits.']]],
+    ['Expense Records',[['All business receipts','Every receipt for business purchases. No receipt = cannot be recorded.'],['Vendor invoices / bills received','Invoices from suppliers, contractors, or service providers.'],['Payroll records (if external)','If payroll is not through Martinez Accounting, provide payroll summary reports.']]],
+    ['Tax & Compliance',[['Sales receipts breakdown',(info.sales_tax?'Required for CDTFA filing. Taxable vs non-taxable sales by category.':'Needed if you collect sales tax.')],['1099 contractor payments','Payments to independent contractors who may require a 1099 at year end.'],['Prior-period adjustments','Notify your rep of any transactions from prior months needing correction.']]],
+  ];
+  bkSections.forEach(([secTitle,rows])=>{
+    if(y>H-100){y=addPg();}
+    setColor(doc,LGRAY);doc.rect(ML,y-10,TW,22,'F');
+    doc.setDrawColor(...NAVY);doc.setLineWidth(1.5);doc.line(ML,y+12,ML+TW,y+12);
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);doc.text(secTitle.toUpperCase(),ML+8,y+4);
+    y+=22;
+    rows.forEach(([lbl,desc])=>{
+      if(y>H-70){y=addPg();}
+      doc.setFontSize(13);doc.setTextColor(...MIDGRAY);doc.text('\u2610',ML+6,y+2);
+      doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...DKTEXT);doc.text(lbl,ML+22,y);
+      doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
+      const dlines=doc.splitTextToSize(desc,TW-28);doc.text(dlines,ML+22,y+12);
+      doc.setDrawColor(...LGRAY);doc.line(ML,y+12+dlines.length*12,MR,y+12+dlines.length*12);
+      y+=16+dlines.length*12;
+    });
+    y+=6;
+  });
+
+  // ── NEW HIRE CHECKLIST ──
+  y=addPg();
+  y=sectionTag(doc,'SECTION 6',ML,y); y=h1(doc,'Employee New Hire Checklist',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  y=bodyText(doc,'Complete this checklist for every new employee before their first paycheck.',ML,y,TW);y+=6;
+  const nhSections=[
+    ['Required — Identity & Eligibility',[['Form I-9','Must be completed by employee on or before first day. Original documents must be physically reviewed.'],['Social Security Number','Must match Social Security card exactly — use full legal name as printed on the card.'],['Government-issued photo ID','Driver\'s license, state ID, or passport.']]],
+    ['Required — Tax Withholding',[['Federal Form W-4','Current IRS version. Employee completes and signs.'],['California Form DE 4','Required for California state income tax withholding.']]],
+    ['Required — Payroll Setup',[['Full legal name and home address','Used for W-2 mailing.'],['Date of birth','Required for certain benefit plan compliance.'],['Hire date and job title','Hire date triggers new hire reporting deadline.'],['Pay rate and FLSA classification','Exempt vs non-exempt. Confirm with your rep if uncertain.'],['Direct deposit authorization','Voided check or bank letter required.']]],
+    ['California-Specific Requirements',[['Notice to Employee (Labor Code §2810.5)','Written notice required at time of hire for all non-exempt employees.'],['California Paid Sick Leave disclosure','All CA employees entitled to paid sick leave. Disclose policy in writing at hire.']]],
+  ];
+  nhSections.forEach(([secTitle,rows])=>{
+    if(y>H-80){y=addPg();}
+    const bg=secTitle.includes('California')?[225,245,238]:[230,241,251];
+    setColor(doc,bg);doc.rect(ML,y-10,TW,20,'F');
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(secTitle.includes('California')?...TEAL:...BLUE);
+    doc.text(secTitle.toUpperCase(),ML+8,y+2);y+=18;
+    rows.forEach(([lbl,desc])=>{
+      if(y>H-70){y=addPg();}
+      doc.setFontSize(13);doc.setTextColor(...MIDGRAY);doc.text('\u2610',ML+6,y+2);
+      doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...DKTEXT);doc.text(lbl,ML+22,y);
+      doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
+      const dlines=doc.splitTextToSize(desc,TW-28);doc.text(dlines,ML+22,y+12);
+      doc.setDrawColor(...LGRAY);doc.line(ML,y+12+dlines.length*12,MR,y+12+dlines.length*12);
+      y+=16+dlines.length*12;
+    });y+=6;
+  });
+
+  // ── SUBMISSION INSTRUCTIONS ──
+  y=addPg();
+  y=sectionTag(doc,'SECTION 7',ML,y); y=h1(doc,'Payroll Submission Instructions',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  const steps=[
+    ['Step 1','Collect hours and pay changes','Gather all time records, PTO, overtime, bonuses, and any pay changes for the period.'],
+    ['Step 2','Report new hires and terminations','Confirm all new employees are set up and all terminated employees have been flagged before submitting payroll.'],
+    ['Step 3','Submit by the deadline',`Submit all payroll data at least 2 business days before your check date. Your pay frequency is ${info.pay_freq}.`],
+    ['Step 4','Review your payroll preview','We will send you a preview before finalizing. Review every line — gross pay, deductions, and net pay.'],
+    ['Step 5','Approve payroll','Approve by phone or email by the cutoff time. We will not process without your explicit approval.'],
+    ['Step 6','Confirm account funding','Ensure your payroll bank account has sufficient funds before the ACH origination date.'],
+    ['Step 7','Distribute pay stubs','California law requires pay stubs to be provided on or before each payday.'],
+  ];
+  steps.forEach(([num,title,desc])=>{
+    if(y>H-80){y=addPg();}
+    setColor(doc,LGRAY);doc.rect(ML,y-10,45,36,'F');
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...BLUE);doc.text(num,ML+8,y+10);
+    doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(...DKTEXT);doc.text(title,ML+52,y);
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
+    const dlines=doc.splitTextToSize(desc,TW-52);doc.text(dlines,ML+52,y+14);
+    doc.setDrawColor(...LGRAY);doc.line(ML,y+26,MR,y+26);
+    y+=32;
+  });
+
+  // ── SERVICE AGREEMENT ──
+  y=addPg();
+  y=sectionTag(doc,'SECTION 8',ML,y); y=h1(doc,'Payroll Services Agreement',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  y=bodyText(doc,`This Payroll Services Agreement ("Agreement") is entered into as of ${today}, between Martinez Accounting Inc., located at 1004 F Street, Reedley, CA 93654 ("Service Provider"), and ${info.biz_name}, located at ${info.biz_address} ("Client").`,ML,y,TW);y+=8;
+  const clauses=[
+    ['1. Scope of Services',[`Service Provider agrees to provide ${info.service_tier} as described in the Fee Schedule. Services include: calculation of gross wages, deductions, and net pay; preparation and filing of federal and California payroll tax returns; direct deposit processing; employee pay stubs; annual W-2 preparation; and new hire reporting.`,'Services are limited to California-based employees unless otherwise agreed in writing.']],
+    ['2. Client Obligations',['Client shall provide accurate and complete payroll data no later than 2 business days before each scheduled check date.',`Client shall submit all bookkeeping records by the 15th of the following month. Client is solely responsible for the accuracy of all information provided.`,'Client shall promptly notify Service Provider of all new hires, terminations, pay rate changes, and any changes to business structure.','Client shall maintain adequate funds in the designated payroll bank account to cover all net payroll and tax obligations.']],
+    ['3. Tax Filing and Compliance',['Service Provider will prepare and file all required federal and California payroll tax returns and remit payroll tax deposits on Client\'s behalf, provided Client has funded the account and all required tax accounts are in good standing.','Service Provider shall not be liable for penalties resulting from Client\'s failure to provide timely or accurate data.']],
+    ['4. Fees and Payment',[`Client agrees to pay the monthly flat fee: ${info.service_tier} at ${info.monthly_fee}. Fees are invoiced monthly and due within 15 days of invoice date.`,
+      ...(info.sales_tax?['In addition to the monthly fee, Client agrees to pay $50.00 per month for quarterly California CDTFA sales tax return preparation and filing.']:[]),
+      ...(info.llc_setup?['Client agrees to pay a one-time setup fee of $1,200.00 for California LLC formation services. This fee is due upon execution and is non-refundable once filing has been initiated.']:[]),
+      'Accounts more than 30 days past due are subject to a monthly late fee of 1.5% of the outstanding balance.']],
+    ['4a. Bookkeeping Records Obligation',['Client agrees to submit all required bookkeeping records no later than the 15th of the month following the period. Late or incomplete records may result in delayed financial statements and are subject to a late records processing fee of $50 per occurrence.']],
+    ['5. Confidentiality',['Both parties agree to maintain the confidentiality of all non-public information, including employee personal data, wage information, and business financial records.']],
+    ['6. Limitation of Liability',['Service Provider\'s total liability shall not exceed the total fees paid by Client in the three months preceding the claim. Service Provider shall not be liable for indirect or consequential damages.']],
+    ['7. Term and Termination',['This Agreement commences on the date signed and continues until terminated by either party with 30 days written notice.','Upon termination, Service Provider will provide Client with all payroll records and tax filings. All fees accrued through termination remain due.']],
+    ['8. Governing Law',['This Agreement shall be governed by California law. Disputes shall be subject to binding arbitration in Fresno County, California.']],
+    ['9. Entire Agreement',['This Agreement, together with the Fee Schedule, constitutes the entire agreement between the parties. Amendments must be in writing and signed by both parties.']],
+  ];
+  clauses.forEach(([title,paras])=>{
+    if(y>H-80){y=addPg();}
+    y=h2(doc,title,ML,y);
+    paras.forEach(p=>{if(y>H-70){y=addPg();}y=bodyText(doc,p,ML,y,TW);});
+  });
+
+  // LLC details in agreement if applicable
+  if(info.llc_setup && info.llc_details){
+    if(y>H-80){y=addPg();}
+    y=h2(doc,'10. California LLC Formation Details',ML,y);
+    const ld=info.llc_details;
+    [['Proposed LLC name',ld.llc_name],['LLC type',ld.llc_type],['Business purpose',ld.llc_purpose],['Principal address',ld.llc_address],['Registered agent',`${ld.llc_agent_name} — ${ld.llc_agent_address}`],['Fiscal year end',ld.llc_fiscal],['Dissolution',ld.llc_dissolution]].forEach(([l,v])=>{
+      if(y>H-60){y=addPg();}y=infoRow(doc,l,v||'—',ML,y,TW);
+    });
+    if(ld.members&&ld.members.length){
+      if(y>H-80){y=addPg();}
+      y=h3(doc,'LLC Members',ML,y);
+      ld.members.forEach((m,i)=>{
+        if(y>H-80){y=addPg();}
+        doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);doc.text(`Member ${i+1}: ${m.name}`,ML,y);y+=14;
+        [['Ownership',m.pct+'%'],['Address',m.address],['Phone',m.phone],['Email',m.email],['SSN/ITIN',m.ssn?'On file':'Not provided'],['Title',m.title]].filter(([,v])=>v&&v!=='%').forEach(([l,v])=>{
+          if(y>H-60){y=addPg();}y=infoRow(doc,l,v,ML,y,TW);
+        });y+=6;
+      });
+    }
+  }
+
+  // ── ACKNOWLEDGMENT ──
+  y=addPg();
+  y=sectionTag(doc,'SECTION 9',ML,y); y=h1(doc,'Acknowledgment & Signature Page',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  y=bodyText(doc,'By signing below, the Client confirms they have received, reviewed, and agreed to the terms set forth in this onboarding package, including the Payroll Services Agreement in Section 8.',ML,y,TW);y+=8;
+  const ackItems=[
+    'I have read and accept the Payroll Services Agreement.',
+    'I understand my obligations as described in the Client Responsibilities section.',
+    'I confirm that the payroll setup information in Section 2 is accurate.',
+    'I have received and reviewed the Monthly Bookkeeping Records section and agree to submit all required records by the 15th of each following month.',
+    'I will promptly notify Martinez Accounting of any changes to employees, pay rates, states of employment, or business structure.',
+    'I have received and reviewed the Employee New Hire Checklist and Payroll Submission Instructions.',
+    `I agree to the monthly fee of ${info.monthly_fee} for ${info.service_tier}.`,
+    ...(info.sales_tax?['I agree to the additional fee of $50.00/month for quarterly California sales tax return preparation.']:[]),
+    ...(info.llc_setup?['I agree to the one-time fee of $1,200.00 for California LLC formation services, due upon signing, non-refundable once filing has been initiated.']:[]),
+  ];
+  ackItems.forEach(item=>{
+    if(y>H-60){y=addPg();}
+    doc.setFontSize(13);doc.setTextColor(...MIDGRAY);doc.text('\u2610',ML,y+2);
+    doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(...DKTEXT);
+    const lines=doc.splitTextToSize(item,TW-18);doc.text(lines,ML+18,y+2);
+    y+=lines.length*14+4;
+  });
+  y+=16;
+  // Sig blocks
+  const drawSigBlock=(label,name,bx,by,bw)=>{
+    setColor(doc,[230,241,251]);doc.rect(bx,by,bw,18,'F');
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);doc.text(label,bx+8,by+12);
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
+    doc.text('Signature',bx+8,by+36);doc.text('Print name',bx+bw*0.45,by+36);doc.text('Date',bx+bw*0.78,by+36);
+    doc.setDrawColor(...NAVY);doc.setLineWidth(0.75);
+    doc.line(bx+8,by+52,bx+bw*0.42,by+52);
+    doc.text(name||'',bx+8,by+64);
+    doc.line(bx+bw*0.45,by+52,bx+bw*0.75,by+52);
+    doc.line(bx+bw*0.78,by+52,bx+bw-8,by+52);
+  };
+  if(y>H-160){y=addPg();}
+  drawSigBlock(`CLIENT — ${info.biz_name.toUpperCase()}`,info.contact,ML,y,TW);y+=80;
+  drawSigBlock('SERVICE PROVIDER — MARTINEZ ACCOUNTING INC.',info.rep_name,ML,y,TW);y+=80;
+  doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(...MIDTEXT);
+  doc.text(`Please return this signed page to ${info.rep_name} at Martinez Accounting Inc., 1004 F Street, Reedley, CA 93654.`,W/2,y,{align:'center'});
+
+  // ── Add footers to all pages ──
+  const totalPgs = doc.internal.getNumberOfPages();
+  for(let i=2;i<=totalPgs;i++){doc.setPage(i);footer(doc,W,H,i-1,totalPgs-1);}
+
+  return doc;
+}
+
+// ── EMPLOYEE PDF ─────────────────────────────────────────────────────────────
+function empHdrBand(doc, pageW, info) {
+  setColor(doc,NAVY); doc.rect(0,0,pageW,50,'F');
+  setColor(doc,TEAL); doc.rect(0,50,pageW,3,'F');
+  doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text(info.biz_name.toUpperCase(), 54, 30);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(181,212,244);
+  doc.text(`${info.biz_address}  |  ${info.biz_phone}`, 54, 43);
+  doc.setTextColor(159,225,203);
+  doc.text('New Employee Onboarding Package', pageW-54, 37, {align:'right'});
+}
+
+function buildEmployeePDF(info) {
+  const doc = newDoc();
+  const W=doc.internal.pageSize.getWidth(), H=doc.internal.pageSize.getHeight();
+  const ML=54, MR=W-54, TW=W-108;
+  const today=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  let pn=1;
+
+  const addEmpPg=()=>{ doc.addPage(); pn++; empHdrBand(doc,W,info); return 70; };
+
+  // ── COVER ──
+  setColor(doc,NAVY);doc.rect(0,0,W,50,'F');
+  setColor(doc,TEAL);doc.rect(0,50,W,3,'F');
+  doc.setFontSize(13);doc.setFont('helvetica','bold');doc.setTextColor(255,255,255);
+  doc.text(info.biz_name.toUpperCase(),ML,30);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(181,212,244);
+  doc.text(`${info.biz_address}  |  ${info.biz_phone}`,ML,43);
+  doc.setTextColor(159,225,203);
+  doc.text('Payroll & Accounting Services',MR,37,{align:'right'});
+
+  let y=130;
+  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...BLUE);
+  doc.text('NEW EMPLOYEE ONBOARDING PACKAGE',W/2,y,{align:'center'});
+  y+=16;doc.setDrawColor(...NAVY);doc.setLineWidth(1.5);doc.line(W/2-160,y,W/2+160,y);
+  y+=5;doc.setDrawColor(...TEAL);doc.setLineWidth(0.5);doc.line(W/2-160,y,W/2+160,y);
+  y+=50;
+  doc.setFontSize(12);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
+  doc.text('Hourly (Non-Exempt) Employees',W/2,y,{align:'center'});
+  y+=16;
+  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);
+  doc.text('Pay Frequency:',W/2-60,y);doc.setFont('helvetica','normal');doc.text(info.pay_freq,W/2+8,y);
+
+  const bx=ML,bw=TW,bh=90,by=H-130;
+  setColor(doc,[248,247,244]);doc.rect(bx,by,bw,bh,'F');
+  doc.setDrawColor(211,209,199);doc.setLineWidth(0.5);doc.rect(bx,by,bw,bh,'S');
+  [['Employee name','_______________________'],['Start date','_______________________'],['Position','_______________________'],['Pay rate','$__________ per hour']].forEach(([l,v],i)=>{
+    const col=i%2,row=Math.floor(i/2);
+    const cx=bx+(bw/2)*col,cy=by+20+row*38;
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(...MIDTEXT);doc.text(l.toUpperCase(),cx+8,cy);
+    doc.setFontSize(11);doc.setFont('helvetica','normal');doc.setTextColor(...NAVY);doc.text(v,cx+8,cy+16);
+    if(col===0&&i<3){doc.setDrawColor(211,209,199);doc.line(cx+bw/2,by,cx+bw/2,by+bh);}
+  });
+  doc.setDrawColor(...NAVY);doc.setLineWidth(1.5);doc.line(ML,H-36,MR,H-36);
+  doc.setDrawColor(...TEAL);doc.setLineWidth(0.5);doc.line(ML,H-30,MR,H-30);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...MIDGRAY);
+  doc.text(`Payroll administered by Martinez Accounting Inc. | 1004 F Street, Reedley, CA 93654`,W/2,H-16,{align:'center'});
+
+  // ── WELCOME ──
+  y=addEmpPg();
+  y=sectionTag(doc,'SECTION 1',ML,y); y=h1(doc,'Welcome & Instructions',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  y=bodyText(doc,`Welcome to ${info.biz_name}. This package contains the required new hire paperwork that must be completed before or on your first day of work. Please read each form carefully and fill out every section completely.`,ML,y,TW);y+=10;
+  const formInstructions=[
+    ['Form I-9','Complete Section 1 yourself on or before your first day. Bring original identity documents — your employer will review them in person. Photocopies are not accepted.'],
+    ['Federal Form W-4','Tells your employer how much federal income tax to withhold. If unsure how to fill it out, visit IRS.gov or consult a tax advisor.'],
+    ['California Form DE 4','California\'s version of the W-4 for state income tax. Must be completed in addition to the federal W-4.'],
+    ['Direct Deposit Authorization','Complete to have your paycheck deposited directly to your bank. Attach a voided check or bank letter.'],
+    ['Employee Information Sheet','Personal details, emergency contact, and employment information for payroll records.'],
+  ];
+  formInstructions.forEach(([form,inst])=>{
+    if(y>H-80){y=addEmpPg();}
+    setColor(doc,[230,241,251]);doc.rect(ML,y-10,100,36,'F');
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...BLUE);doc.text(form,ML+8,y+8);
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
+    const ins=doc.splitTextToSize(inst,TW-108);doc.text(ins,ML+108,y);
+    doc.setDrawColor(...LGRAY);doc.line(ML,y+26,MR,y+26);
+    y+=32;
+  });
+
+  // ── EMPLOYEE INFO SHEET ──
+  y=addEmpPg();
+  y=sectionTag(doc,'SECTION 2',ML,y); y=h1(doc,'Employee Information Sheet',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  y=h2(doc,'Personal Information',ML,y);
+  const empFields=['Full legal name (as on Social Security card)','Date of birth (MM/DD/YYYY)','Home address','City, State, ZIP','Phone number','Personal email address'];
+  empFields.forEach(f=>{
+    if(y>H-60){y=addEmpPg();}
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...MIDTEXT);doc.text(f,ML,y);
+    doc.setDrawColor(...MIDGRAY);doc.setLineWidth(0.75);doc.line(ML+doc.getTextWidth(f)+8,y,MR,y);y+=22;
+  });
+  y+=6;y=h2(doc,'Employment Details',ML,y);
+  ['Job title / position','Start date','Hourly pay rate','Work schedule (days/hours)'].forEach(f=>{
+    if(y>H-60){y=addEmpPg();}
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...MIDTEXT);doc.text(f,ML,y);
+    doc.setDrawColor(...MIDGRAY);doc.setLineWidth(0.75);doc.line(ML+doc.getTextWidth(f)+8,y,MR,y);y+=22;
+  });
+  y+=8;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);doc.text('Employment type:',ML,y);
+  ['Full-time','Part-time','Seasonal / temporary'].forEach((t,i)=>{
+    doc.setFontSize(12);doc.text('\u2610',ML+110+i*100,y-2);
+    doc.setFontSize(9);doc.text(t,ML+124+i*100,y);
+  });y+=22;
+  y+=6;y=h2(doc,'Emergency Contact',ML,y);
+  ['Emergency contact name','Relationship','Emergency contact phone'].forEach(f=>{
+    if(y>H-60){y=addEmpPg();}
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...MIDTEXT);doc.text(f,ML,y);
+    doc.setDrawColor(...MIDGRAY);doc.setLineWidth(0.75);doc.line(ML+doc.getTextWidth(f)+8,y,MR,y);y+=22;
+  });
+  y+=12;
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
+  doc.text('Employee signature:',ML,y);doc.setDrawColor(...NAVY);doc.setLineWidth(0.75);doc.line(ML+110,y,MR-80,y);
+  doc.text('Date:',MR-70,y);doc.line(MR-40,y,MR,y);
+
+  // ── I-9 ──
+  y=addEmpPg();
+  y=sectionTag(doc,'SECTION 3',ML,y); y=h1(doc,'Form I-9 — Employment Eligibility Verification',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  setColor(doc,[252,235,235]);doc.rect(ML,y,TW,40,'F');doc.setDrawColor(...RED);doc.setLineWidth(2);doc.line(ML,y,MR,y);
+  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...RED);doc.text('Official form required:',ML+8,y+14);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('Download the current Form I-9 free at uscis.gov/i-9. This page provides instructions only.',ML+8,y+28);y+=50;
+  y=bodyText(doc,'All U.S. employers must verify that every employee is legally authorized to work in the United States. Form I-9 is how that verification is done.',ML,y,TW);
+  y=h2(doc,'Acceptable Identity Documents — Bring Originals on Day 1',ML,y);
+  const docLists=[['List A — Identity & Work Authorization',['U.S. Passport or Passport Card','Permanent Resident Card (Green Card)','Employment Authorization Document (EAD)']],['List B — Identity Only',['Driver\'s license or state ID','School ID with photo','U.S. military card']],['List C — Work Authorization Only',['Social Security card (unrestricted)','U.S. birth certificate','Native American tribal document']]];
+  const colW3=TW/3;
+  docLists.forEach(([title,items],i)=>{
+    const cx=ML+colW3*i;
+    const bg=i===0?[230,241,251]:i===1?[225,245,238]:[234,243,222];
+    setColor(doc,bg);doc.rect(cx,y-10,colW3-4,18,'F');
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(i===0?...BLUE:i===1?...TEAL:[59,109,17]);
+    doc.text(title,cx+4,y+2,{maxWidth:colW3-8});
+  });y+=18;
+  const maxRows=3;
+  for(let r=0;r<maxRows;r++){
+    docLists.forEach(([,items],i)=>{
+      if(items[r]){
+        const cx=ML+colW3*i;
+        doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...DKTEXT);
+        doc.text(`\u2022 ${items[r]}`,cx+4,y,{maxWidth:colW3-8});
+      }
+    });y+=14;
+  }y+=8;
+  y=h2(doc,'Key Rules',ML,y);
+  [['Employee','Complete Section 1 on or before your first day. Sign and date it yourself.'],['Employer','Physically examine original documents. Complete Section 2 within 3 business days of hire.'],['Retention','Keep I-9 for 3 years after hire date or 1 year after termination, whichever is later.']].forEach(([who,what])=>{
+    if(y>H-60){y=addEmpPg();}
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);doc.text(who+':',ML,y);
+    doc.setFont('helvetica','normal');doc.setTextColor(...DKTEXT);
+    const lines=doc.splitTextToSize(what,TW-60);doc.text(lines,ML+60,y);y+=lines.length*14+4;
+  });
+
+  // ── W-4 ──
+  y=addEmpPg();
+  y=sectionTag(doc,'SECTION 4',ML,y); y=h1(doc,'Federal Form W-4 — Employee\'s Withholding Certificate',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  setColor(doc,[252,235,235]);doc.rect(ML,y,TW,40,'F');doc.setDrawColor(...RED);doc.setLineWidth(2);doc.line(ML,y,MR,y);
+  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...RED);doc.text('Official form required:',ML+8,y+14);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('Download the current W-4 at irs.gov/pub/irs-pdf/fw4.pdf',ML+8,y+28);y+=50;
+  y=bodyText(doc,'Form W-4 tells your employer how much federal income tax to withhold from each paycheck.',ML,y,TW);
+  [['Step 1 — Personal information (required for everyone)','Enter your legal name, address, Social Security number, and filing status.'],['Step 2 — Multiple jobs','Complete only if you have more than one job or if you are married and your spouse also works.'],['Step 3 — Claim dependents','If your total income is $200,000 or less, you may be able to reduce withholding by claiming dependents.'],['Step 4 — Other adjustments','Optional entries for other income, deductions, or extra withholding.'],['Step 5 — Sign and date','Required. The form is not valid without your signature.']].forEach(([title,desc])=>{
+    if(y>H-70){y=addEmpPg();}y=h3(doc,title,ML,y);y=bodyText(doc,desc,ML+8,y,TW-8);
+  });
+  y+=8;y=bodyText(doc,'Your employer cannot tell you how to fill out this form. If you need guidance, visit IRS.gov or speak with a tax advisor.',ML,y,TW);
+
+  // ── DE 4 ──
+  y=addEmpPg();
+  y=sectionTag(doc,'SECTION 5',ML,y); y=h1(doc,'California Form DE 4 — Withholding Allowance Certificate',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  setColor(doc,[252,235,235]);doc.rect(ML,y,TW,40,'F');doc.setDrawColor(...RED);doc.setLineWidth(2);doc.line(ML,y,MR,y);
+  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...RED);doc.text('Official form required:',ML+8,y+14);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('Download at edd.ca.gov/siteassets/files/pdf_pub_ctr/de4.pdf',ML+8,y+28);y+=50;
+  y=bodyText(doc,'Form DE 4 is California\'s version of the W-4 for state income tax. You must complete this in addition to the federal W-4 — your W-4 alone is not sufficient for California withholding.',ML,y,TW);
+  y+=8;y=bodyText(doc,'If you do not submit a DE 4, California law requires your employer to withhold as if you are Single with zero allowances — which may mean more tax withheld than necessary.',ML,y,TW);
+
+  // ── DIRECT DEPOSIT ──
+  y=addEmpPg();
+  y=sectionTag(doc,'SECTION 6',ML,y); y=h1(doc,'Direct Deposit Authorization',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  setColor(doc,AMBLT);doc.rect(ML,y,TW,40,'F');doc.setDrawColor(...AMBER);doc.setLineWidth(2);doc.line(ML,y,MR,y);
+  doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...AMBER);doc.text('Before you complete this form:',ML+8,y+14);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(90,56,0);doc.text('Attach a voided check or bank-issued direct deposit letter. Deposit slips are not accepted.',ML+8,y+28);y+=50;
+  y=h2(doc,'Authorization Form',ML,y);
+  ['Employee full legal name','Social Security Number (last 4 digits)','Name of financial institution','Bank routing number (9 digits)','Account number'].forEach(f=>{
+    if(y>H-60){y=addEmpPg();}
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...MIDTEXT);doc.text(f,ML,y);
+    doc.setDrawColor(...MIDGRAY);doc.setLineWidth(0.75);doc.line(ML+doc.getTextWidth(f)+8,y,MR,y);y+=22;
+  });
+  y+=6;doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);doc.text('Account type:',ML,y);
+  doc.setFontSize(12);doc.text('\u2610',ML+90,y-2);doc.setFontSize(9);doc.text('Checking',ML+104,y);
+  doc.setFontSize(12);doc.text('\u2610',ML+180,y-2);doc.setFontSize(9);doc.text('Savings',ML+194,y);y+=22;
+  y+=10;y=bodyText(doc,`I authorize ${info.biz_name} and its payroll processor, Martinez Accounting Inc., to initiate credit entries (deposits) to my bank account. I understand a prenote may be sent before the first live deposit. My first paycheck may be issued as a paper check while the account is verified.`,ML,y,TW);
+  y+=12;
+  doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(...MIDTEXT);doc.text('Employee signature:',ML,y);doc.setDrawColor(...NAVY);doc.setLineWidth(0.75);doc.line(ML+115,y,MR-80,y);doc.text('Date:',MR-70,y);doc.line(MR-40,y,MR,y);
+
+  // ── ACKNOWLEDGMENT ──
+  y=addEmpPg();
+  y=sectionTag(doc,'SECTION 7',ML,y); y=h1(doc,'Acknowledgment & Signature',ML,y);
+  y=hRule(doc,ML,y,TW,[181,212,244]);
+  y=bodyText(doc,'By signing below, I confirm that I have received, read, and understood this New Employee Onboarding Package.',ML,y,TW);y+=8;
+  const empAck=[
+    'I have completed and am returning all required forms in this package.',
+    'I understand that my first paycheck may be a paper check while my direct deposit is verified.',
+    `I understand ${info.biz_name} pays ${info.pay_freq}. I will submit accurate time records by my supervisor's deadline each pay period.`,
+    'I understand I am classified as a non-exempt (hourly) employee and am entitled to overtime pay under California law: 1.5x for hours over 8/day or 40/week; 2x for hours over 12/day.',
+    'I understand I am entitled to meal and rest breaks as required by California law.',
+    'I understand I am entitled to California Paid Sick Leave.',
+    'I will notify my supervisor of any changes to my personal information, tax withholding, or direct deposit details.',
+  ];
+  empAck.forEach(item=>{
+    if(y>H-60){y=addEmpPg();}
+    doc.setFontSize(13);doc.setTextColor(...MIDGRAY);doc.text('\u2610',ML,y+2);
+    doc.setFontSize(10);doc.setFont('helvetica','normal');doc.setTextColor(...DKTEXT);
+    const lines=doc.splitTextToSize(item,TW-18);doc.text(lines,ML+18,y+2);y+=lines.length*14+4;
+  });
+  y+=16;
+  // Sig blocks
+  const drawEmpSig=(label,name,bx,by,bw)=>{
+    setColor(doc,[230,241,251]);doc.rect(bx,by,bw,18,'F');
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(...NAVY);doc.text(label,bx+8,by+12);
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(...MIDTEXT);
+    doc.text('Signature',bx+8,by+36);doc.text('Print full legal name',bx+bw*0.45,by+36);doc.text('Date',bx+bw*0.78,by+36);
+    doc.setDrawColor(...NAVY);doc.setLineWidth(0.75);
+    doc.line(bx+8,by+52,bx+bw*0.42,by+52);
+    doc.line(bx+bw*0.45,by+52,bx+bw*0.75,by+52);
+    doc.line(bx+bw*0.78,by+52,bx+bw-8,by+52);
+  };
+  if(y>H-160){y=addEmpPg();}
+  drawEmpSig('EMPLOYEE','',ML,y,TW);y+=80;
+  drawEmpSig(`SUPERVISOR / ${info.biz_name.toUpperCase()}  —  I-9 documents verified: □ Yes  □ No`,'',ML,y,TW);y+=70;
+  doc.setFontSize(8);doc.setFont('helvetica','italic');doc.setTextColor(...MIDTEXT);
+  doc.text('Return completed forms to your supervisor. Payroll administered by Martinez Accounting Inc. | 1004 F Street, Reedley, CA 93654',W/2,y,{align:'center',maxWidth:TW});
+
+  // Add footers
+  const empTotalPgs=doc.internal.getNumberOfPages();
+  for(let i=2;i<=empTotalPgs;i++){
+    doc.setPage(i);
+    doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(...MIDGRAY);
+    doc.text(`CONFIDENTIAL — ${info.biz_name} | New Employee Onboarding Package`,ML,H-18);
+    doc.text(`Page ${i-1} of ${empTotalPgs-1}`,MR,H-18,{align:'right'});
+    doc.setDrawColor(...LGRAY);doc.setLineWidth(0.5);doc.line(ML,H-26,MR,H-26);
+  }
+
+  return doc;
+}
+
+// ── Generate & Download ──────────────────────────────────────────────────────
+let savedClientDoc=null, savedEmpDoc=null;
+
+async function generatePackages() {
+  const data = collectData();
+  lastData = data;
+  document.getElementById('form-section').style.display='none';
+  document.getElementById('gen-box').classList.add('active');
+  const statusEl=document.getElementById('gen-status');
+  const statuses=['Building client onboarding package…','Writing service agreement…','Compiling fee schedule…','Building employee forms…','Finalising PDFs…'];
+  let si=0;
+  const iv=setInterval(()=>{statusEl.textContent=statuses[si%statuses.length];si++;},900);
+  await new Promise(r=>setTimeout(r,200));
+  try {
+    savedClientDoc = buildClientPDF(data);
+    savedClientDoc.save(`${data.biz_name.replace(/\s+/g,'_')}_Onboarding_Package.pdf`);
+    await new Promise(r=>setTimeout(r,400));
+    savedEmpDoc = buildEmployeePDF(data);
+    savedEmpDoc.save(`${data.biz_name.replace(/\s+/g,'_')}_New_Employee_Package.pdf`);
+    clearInterval(iv);
+    document.getElementById('gen-box').classList.remove('active');
+    document.getElementById('success-box').classList.add('active');
+  } catch(e) {
+    clearInterval(iv);
+    document.getElementById('gen-box').classList.remove('active');
+    document.getElementById('form-section').style.display='block';
+    alert('Error generating PDF: '+e.message);
+    console.error(e);
+  }
+}
+
+function reDownload(type) {
+  if(!lastData){alert('Please generate the packages first.');return;}
+  if(type==='client'&&savedClientDoc) savedClientDoc.save(`${lastData.biz_name.replace(/\s+/g,'_')}_Onboarding_Package.pdf`);
+  if(type==='employee'&&savedEmpDoc) savedEmpDoc.save(`${lastData.biz_name.replace(/\s+/g,'_')}_New_Employee_Package.pdf`);
+}
+
+function resetForm() {
+  savedClientDoc=null; savedEmpDoc=null; lastData=null;
+  document.getElementById('success-box').classList.remove('active');
+  document.getElementById('form-section').style.display='block';
+  document.querySelectorAll('input[type=text],input[type=tel],input[type=email],input[type=number],textarea').forEach(el=>el.value='');
+  document.querySelectorAll('input[type=date]').forEach(el=>el.value='');
+  document.getElementById('llc_setup').checked=false;
+  document.getElementById('sales_tax').checked=false;
+  document.getElementById('llc-details').style.display='none';
+  document.getElementById('llc-notice').style.display='none';
+  document.getElementById('sales-tax-notice').style.display='none';
+  document.getElementById('members-list').innerHTML='';
+  memberCount=0;
+  showStep(1);
+}
+document.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>el.style.borderColor=''));
+</script>
+</body>
+</html>
